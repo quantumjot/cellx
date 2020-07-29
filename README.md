@@ -8,3 +8,5 @@ Code for CellX and related projects
 
 ### Contributors
 * Alan R. Lowe (quantumjot, arl)
+
+* T.L. Laure Ho (laureho, tllh)
