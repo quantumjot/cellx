@@ -10,3 +10,5 @@ Code for CellX and related projects
 * Alan R. Lowe (quantumjot, arl)
 
 * T.L. Laure Ho (laureho, tllh)
+
+* Christopher J. Soelistyo (chris-soelistyo, cjs)
