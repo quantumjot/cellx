@@ -8,7 +8,9 @@ class ConvBlock2D(K.layers.Layer):
     by activation
 
     Params:
-        units: int, number of kernels for the 2D convolution
+        filters: int, number of kernels for the 2D convolution
+        kernel_size: tuple,
+        padding: str,
         activation: str, name of activation function
 
     Notes:
@@ -16,12 +18,14 @@ class ConvBlock2D(K.layers.Layer):
 
     """
     def __init(self,
-               units: int = 32,
+               filters: int = 32,
+               kernel_size: tuple = (3, 3),
+               padding: str = 'same',
                activation: str = 'swish',
                **kwargs):
         super(ConvBlock2D, self).__init__(**kwargs)
 
-        self.conv = K.layers.Conv2D(units, (3, 3), padding='same')
+        self.conv = K.layers.Conv2D(filters, kernel_size, padding=padding)
         self.norm = K.layers.BatchNormalization()
         self.activation = K.layers.Activation(activation)
 
@@ -41,7 +45,9 @@ class Encoder2D(K.layers.Layer):
     Keras layer to build a stacked encoder using ConvBlock2D
 
     Params:
-        kernels: list, a list of kernels for each layer
+        layers: list, a list of kernels for each layer
+        kernel_size: tuple,
+        padding: str,
         activation: str, name of activation function
 
     Notes:
@@ -49,10 +55,18 @@ class Encoder2D(K.layers.Layer):
         in the encoder.
     """
     def __init__(self,
-                 kernels: list = [8, 16, 32],
+                 layers: list = [8, 16, 32],
+                 kernel_size: tuple = (3, 3),
+                 padding: str = 'same',
                  activation: str = 'swish',
                  **kwargs):
         super(Encoder2D, self).__init__(**kwargs)
+
+        # build the convolutional layer list
+        # self.layers = [ConvBlock2D(l, kernel_size) for l in layers]
+
+    def build(self, input_size):
+        """ build the encoder network """
 
     def call(self, x):
         pass
