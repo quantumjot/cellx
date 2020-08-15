@@ -100,7 +100,7 @@ class EncodingReader:
 
     Usage:
         encodings = EncodingReader('/path/to/encodings.json')
-        for encoded, metadata in encodings::
+        for encoded, metadata in encodings:
             print(encoding, metadata)
 
     Notes:

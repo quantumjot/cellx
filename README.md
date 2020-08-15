@@ -6,6 +6,22 @@ Code for CellX and related projects
 
 ---
 
+### Installation
+
+```sh
+$ git clone https://github.com/quantumjot/cellx.github
+$ cd cellx
+$ pip install -e .
+```
+
+From python:
+
+```python
+import cellx
+```
+
+---
+
 ### Contributors
 * Alan R. Lowe (quantumjot, arl)
 * T.L. Laure Ho (laureho, tllh)
