@@ -26,10 +26,23 @@ class EncodingWriter:
     Usage:
 
         with EncodingWriter('/path/to/encodings.json') as writer:
+
+            # put your code here to generate the encoding
+            src_file = 'GV0800/Pos12/data.tif'
+            encoding = some_function_to_generate_encoding(src_file)
+
+            # save the encoding as a destination file:
+            dst_file = 'GV0800/Pos12/data_encoded.npz'
+
+            # store metadata, e.g. model parameters used for encoding
+            metadata = {'model': 'my_cool_model.h5',
+                        'version': '0027'}
+
             writer.write(encoding,
-                         'GV0800/Pos12/data.tif',
-                         'GV0800/Pos12/data_encoded.npz',
-                         class_label=0)
+                         src_file,
+                         dst_file,
+                         class_label=0,
+                         metadata=metadata)
 
     """
     def __init__(self,
@@ -87,8 +100,13 @@ class EncodingReader:
 
     Usage:
         encodings = EncodingReader('/path/to/encodings.json')
-        for encoding in encodings:
-            print(encoding)
+        for encoded, metadata in encodings::
+            print(encoding, metadata)
+
+    Notes:
+        this compares the hash of the loaded encoding with that stored in the
+        metadata from the json. this is to ensure that the metadata and the
+        encoding match.
 
     """
     def __init__(self,
@@ -128,8 +146,3 @@ class EncodingReader:
         assert encoded['class_label'] == metadata['class_label']
         assert _hash_encoding(encoding) == metadata['hash']
         return encoding, metadata
-
-
-    @property
-    def statistics(self):
-        pass
