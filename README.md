@@ -9,7 +9,7 @@ Code for CellX and related projects
 ### Installation
 
 ```sh
-$ git clone https://github.com/quantumjot/cellx.github
+$ git clone https://github.com/quantumjot/cellx.git
 $ cd cellx
 $ pip install -e .
 ```
