@@ -3,3 +3,4 @@ __pycache__
 *.h5
 *.pyc
 .ipynb_checkpoints
+cellx.egg-info
