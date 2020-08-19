@@ -17,13 +17,12 @@ class ConvBlock2D(K.layers.Layer):
         TODO(arl): accept activation functions as well as names
 
     """
-    def __init(self,
-               filters: int = 32,
-               kernel_size: tuple = (3, 3),
-               padding: str = 'same',
-               activation: str = 'swish',
-               **kwargs):
-        super(ConvBlock2D, self).__init__(**kwargs)
+    def __init__(self,
+                 filters: int = 32,
+                 kernel_size: tuple = (3,3),
+                 padding: str = 'same',
+                 activation: str = 'swish'):
+        super(ConvBlock2D, self).__init__()
 
         self.conv = K.layers.Conv2D(filters, kernel_size, padding=padding)
         self.norm = K.layers.BatchNormalization()
@@ -58,18 +57,22 @@ class Encoder2D(K.layers.Layer):
                  layers: list = [8, 16, 32],
                  kernel_size: tuple = (3, 3),
                  padding: str = 'same',
-                 activation: str = 'swish',
-                 **kwargs):
-        super(Encoder2D, self).__init__(**kwargs)
+                 activation: str = 'swish'):
+        super(Encoder2D, self).__init__()
 
         # build the convolutional layer list
-        # self.layers = [ConvBlock2D(l, kernel_size) for l in layers]
+        self.layers = [ConvBlock2D(filters=k,
+                                   kernel_size=kernel_size,
+                                   padding=padding,
+                                   activation=activation) for k in layers]
 
-    def build(self, input_size):
-        """ build the encoder network """
+        self.pool = K.layers.MaxPooling2D()
 
     def call(self, x):
-        pass
+        for layer in self.layers:
+            x = layer(x)
+            x = self.pool(x)
+        return x
 
 
 
