@@ -32,7 +32,7 @@ def tensorboard_montage_callback(model: K.Model,
 
 
 def montage(x,
-            max_images: int = 32
+            max_images: int = 32,
             columns: int = 8,
             rows: int = 4):
     """ make a montage of the images """
