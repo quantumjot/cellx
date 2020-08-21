@@ -76,6 +76,43 @@ class Encoder2D(K.layers.Layer):
 
 
 
+class Decoder2D(K.layers.Layer):
+    """ Decoder2D
+
+    Keras layer to build a stacked decoder using ConvBlock2D
+
+    Params:
+        layers: list, a list of kernels for each layer
+        kernel_size: tuple,
+        padding: str,
+        activation: str, name of activation function
+
+    Notes:
+        The list of kernels can be used to infer the number of conv-pool layers
+        in the encoder.
+    """
+    def __init__(self,
+                 layers: list = [8, 16, 32],
+                 kernel_size: tuple = (3, 3),
+                 padding: str = 'same',
+                 activation: str = 'swish'):
+        super(Decoder2D, self).__init__()
+
+        # build the convolutional layer list
+        self.layers = [ConvBlock2D(filters=k,
+                                   kernel_size=kernel_size,
+                                   padding=padding,
+                                   activation=activation) for k in layers]
+
+        self.upsample = K.layers.UpSampling2D()
+
+    def call(self, x):
+        for layer in self.layers:
+            x = self.upsample(x)
+            x = layer(x)
+        return x
+
+
 if __name__ == '__main__':
     # boilerplate
     pass
