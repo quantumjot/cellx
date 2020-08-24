@@ -3,6 +3,7 @@ import json
 import hashlib
 import numpy as np
 from tqdm import tqdm
+from skimage import io
 
 
 def _hash_encoding(x: np.array):
@@ -135,7 +136,7 @@ class EncodingReader:
         """ return the number of entries """
         return len(self._metadata)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int):
         metadata = self._metadata[idx]
 
         # load the encoding
@@ -146,3 +147,29 @@ class EncodingReader:
         assert encoded['class_label'] == metadata['class_label']
         assert _hash_encoding(encoding) == metadata['hash']
         return encoding, metadata
+
+    def load_image(self,
+                   idx: int,
+                   scale: int = 1,
+                   use_cutoff: bool = True):
+
+        """ get the associated image data """
+        metadata = self._metadata[idx]
+
+        # load the encoding
+        image = io.imread(f"{metadata['src_file']}.tif")
+
+        # get the cutoff
+        if use_cutoff:
+            cutoff = metadata['cutoff']
+        else:
+            cutoff = image.shape[0]
+
+        assert cutoff >=0 and cutoff <= image.shape[0]
+        assert scale >=0 and scale < image.shape[1]
+
+        # crop the image stack, and make channels last dim
+        stack = image[:cutoff, scale, ...]
+        stack = np.rollaxis(stack, 1, 4)
+
+        return stack, metadata
