@@ -156,8 +156,12 @@ class EncodingReader:
         """ get the associated image data """
         metadata = self._metadata[idx]
 
-        # load the encoding
-        image = io.imread(f"{metadata['src_file']}.tif")
+        # load the raw image data
+        image_fn = metadata['src_file']
+        if not image_fn.endswith('.tif'):
+            image_fn = image_fn + '.tif'
+
+        image = io.imread(image_fn)
 
         # get the cutoff
         if use_cutoff:
