@@ -5,9 +5,9 @@ def augmentation_label_handler(augmentation_fn):
     but not the label (if present) """
     @wraps(augmentation_fn)
     def _wrapper(*args, **kwargs):
-        if isinstance(args, tuple):
+        if len(args) == 2:
             data, label = args
             return augmentation_fn(data, **kwargs), label
         else:
-            return augmentation_fn(args, **kwargs)
+            return augmentation_fn(*args, **kwargs)
     return _wrapper
