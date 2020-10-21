@@ -9,6 +9,7 @@ from sklearn.metrics import confusion_matrix
 
 import matplotlib.pyplot as plt
 
+
 def tensorboard_montage_callback(model: K.Model,
                                  test_images: np.ndarray,
                                  logdir: str):
@@ -33,9 +34,6 @@ def tensorboard_montage_callback(model: K.Model,
 
     # make a lambda call back
     return K.callbacks.LambdaCallback(on_epoch_end=log_montage)
-
-
-
 
 
 def tensorboard_confusion_matrix_callback(model: K.Model,
@@ -78,8 +76,6 @@ def tensorboard_confusion_matrix_callback(model: K.Model,
     return K.callbacks.LambdaCallback(on_epoch_end=log_confusion_matrix)
 
 
-
-
 def plot_to_image(figure):
     """ converts the matplotlib plot specified by 'figure' to a PNG image and
     returns it. The supplied figure is closed and inaccessible after this call.
@@ -98,19 +94,20 @@ def plot_to_image(figure):
     return image
 
 
-
-
 def plot_montage(x,
                  max_images: int = 32,
                  columns: int = 8,
                  rows: int = 4):
     """ make a montage of the images """
 
-    x = x[:max_images,...]
+    x = x[:max_images, ...]
 
-    rgb = tf.stack([x[...,1], x[...,0], x[...,1]], axis=-1)
+    rgb = tf.stack([x[..., 1],
+                    x[..., 0],
+                    x[..., 1]], axis=-1)
+
     rgb = tf.pad(tensor=rgb,
-                 paddings=[[0,0], [1,1], [1,1], [0,0]],
+                 paddings=[[0, 0], [1, 1], [1, 1], [0, 0]],
                  mode='CONSTANT',
                  constant_values=tf.reduce_min(input_tensor=rgb))
 
@@ -121,13 +118,11 @@ def plot_montage(x,
     montage = []
     for r in range(rows):
         j = columns * r
-        row = tf.concat([rgb[i,...] for i in range(j,j+columns)], axis=1)
+        row = tf.concat([rgb[i, ...] for i in range(j, j + columns)], axis=1)
         montage.append(row)
 
     montage = tf.concat(montage, axis=0)
-    return tf.cast(montage[tf.newaxis,...]*255, tf.uint8)
-
-
+    return tf.cast(montage[tf.newaxis, ...] * 255, tf.uint8)
 
 
 def plot_confusion_matrix(cm: np.ndarray,

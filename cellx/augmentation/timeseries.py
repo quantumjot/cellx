@@ -1,15 +1,12 @@
-import numpy as np
 import tensorflow as tf
 
 from .handler import augmentation_label_handler
-
 
 
 @augmentation_label_handler
 def augment_timeseries_dummy(x: tf.Tensor):
     """ dummy augmention, returns original tensor """
     return x
-
 
 
 @augmentation_label_handler
@@ -19,8 +16,7 @@ def augment_timeseries_shift(x: tf.Tensor,
 
     # shift the data by removing a random number of later time points
     dt = tf.random.uniform(shape=[], minval=0, maxval=max_shift, dtype=tf.int32)
-    return x[:-dt,...]
-
+    return x[:-dt, ...]
 
 
 @augmentation_label_handler
@@ -30,8 +26,7 @@ def augment_timeseries_crop(x: tf.Tensor,
 
     max_crop = tf.shape(x)[0] - min_length
     dt = tf.random.uniform(shape=[], minval=0, maxval=max_crop, dtype=tf.int32)
-    return x[dt:,...]
-
+    return x[dt:, ...]
 
 
 @augmentation_label_handler
@@ -47,8 +42,7 @@ def augment_timeseries_swap(x: tf.Tensor,
     updates = tf.gather(x, shuffled_idx, axis=0)
 
     # re-insert the shuffled time-points in the original sequence at idx
-    return tf.tensor_scatter_nd_update(x, idx[...,tf.newaxis], updates)
-
+    return tf.tensor_scatter_nd_update(x, idx[..., tf.newaxis], updates)
 
 
 @augmentation_label_handler
@@ -60,7 +54,6 @@ def augment_timeseries_shuffle(x: tf.Tensor):
     return tf.gather(x, idx, axis=0)
 
 
-
 @augmentation_label_handler
 def augment_timeseries_noise(x: tf.Tensor,
                              stddev_spread: float = 0.15):
@@ -70,7 +63,6 @@ def augment_timeseries_noise(x: tf.Tensor,
     stddev = stddev_spread * (tf.reduce_max(x) - tf.reduce_min(x))
     noise = tf.random.normal(tf.shape(x), mean=0, stddev=stddev)
     return x + noise
-
 
 
 @augmentation_label_handler
@@ -87,8 +79,7 @@ def augment_timeseries_corrupt(x: tf.Tensor,
     idx = tf.random.shuffle(tf.range(tf.shape(x)[0]))[:n_corrupt]
 
     # re-insert the shuffled time-points in the original sequence at idx
-    return tf.tensor_scatter_nd_update(x, idx[...,tf.newaxis], noise)
-
+    return tf.tensor_scatter_nd_update(x, idx[..., tf.newaxis], noise)
 
 
 @augmentation_label_handler
@@ -98,7 +89,7 @@ def augment_timeseries_dropout(x: tf.Tensor,
     size """
 
     # get the indices to update
-    idx = tf.random.shuffle(tf.range(tf.shape(x)[0]))[:tf.shape(x)[0]-n_dropout]
+    idx = tf.random.shuffle(tf.range(tf.shape(x)[0]))[:tf.shape(x)[0] - n_dropout]
     dropout = tf.gather(x, idx, axis=0)
     pad_shape = tf.concat([[n_dropout], tf.shape(x)[1:]], axis=0)
     # re-insert the shuffled time-points in the original sequence at idx

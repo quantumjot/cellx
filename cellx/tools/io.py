@@ -2,7 +2,6 @@ import os
 import json
 import hashlib
 import numpy as np
-from tqdm import tqdm
 from skimage import io
 
 
@@ -12,7 +11,6 @@ def _hash_encoding(x: np.array):
     m = hashlib.sha256()
     m.update(x.tostring())
     return m.hexdigest()
-
 
 
 class EncodingWriter:
@@ -66,7 +64,7 @@ class EncodingWriter:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         with open(self._filename, 'w') as file:
-            json.dump(self._json_data, file,  separators=(',', ':'), indent=2)
+            json.dump(self._json_data, file, separators=(',', ':'), indent=2)
 
     def write(self,
               encoding: np.ndarray,
@@ -89,12 +87,10 @@ class EncodingWriter:
         self._json_data[dst_file] = {**data, **metadata}
 
 
-
 class EncodingReader:
     """ EncodingReader
 
     Handler class for reading encoded data
-
 
     Params:
         filename: str, a path to the json file created by the EncodingWriter
@@ -108,11 +104,9 @@ class EncodingReader:
         this compares the hash of the loaded encoding with that stored in the
         metadata from the json. this is to ensure that the metadata and the
         encoding match.
-
     """
     def __init__(self,
                  filename: str):
-
         # grab the data from the file
         with open(filename, 'r') as file:
             data = json.load(file)
@@ -129,8 +123,8 @@ class EncodingReader:
     def __next__(self):
         if self._idx >= len(self):
             raise StopIteration
-        self._idx+=1
-        return self[self._idx-1]
+        self._idx += 1
+        return self[self._idx - 1]
 
     def __len__(self):
         """ return the number of entries """
@@ -143,7 +137,7 @@ class EncodingReader:
         encoded = np.load(metadata['dst_file'])
         encoding = encoded['encoding']
 
-        # sanity check that the class label is correct and that the hash matches
+        # sanity check that the class label is correct and that the hash match
         assert encoded['class_label'] == metadata['class_label']
         assert _hash_encoding(encoding) == metadata['hash']
         return encoding, metadata
@@ -152,7 +146,6 @@ class EncodingReader:
                    idx: int,
                    scale: int = 1,
                    use_cutoff: bool = True):
-
         """ get the associated image data """
         metadata = self._metadata[idx]
 
@@ -169,8 +162,8 @@ class EncodingReader:
         else:
             cutoff = image.shape[0]
 
-        assert cutoff >=0 and cutoff <= image.shape[0]
-        assert scale >=0 and scale < image.shape[1]
+        assert cutoff >= 0 and cutoff <= image.shape[0]
+        assert scale >= 0 and scale < image.shape[1]
 
         # crop the image stack, and make channels last dim
         stack = image[:cutoff, scale, ...]

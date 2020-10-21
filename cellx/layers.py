@@ -1,5 +1,5 @@
-import numpy as np
 from tensorflow import keras as K
+
 
 class ConvBlock2D(K.layers.Layer):
     """ ConvBlock2D
@@ -19,7 +19,7 @@ class ConvBlock2D(K.layers.Layer):
     """
     def __init__(self,
                  filters: int = 32,
-                 kernel_size: tuple = (3,3),
+                 kernel_size: tuple = (3, 3),
                  padding: str = 'same',
                  activation: str = 'swish',
                  **kwargs):
@@ -44,9 +44,6 @@ class ConvBlock2D(K.layers.Layer):
         config = super(ConvBlock2D, self).get_config()
         config.update(self._config)
         return config
-
-
-
 
 
 class Encoder2D(K.layers.Layer):
@@ -95,9 +92,6 @@ class Encoder2D(K.layers.Layer):
         config = super(Encoder2D, self).get_config()
         config.update(self._config)
         return config
-
-
-
 
 
 class Decoder2D(K.layers.Layer):
