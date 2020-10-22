@@ -1,5 +1,6 @@
 from functools import wraps
 
+
 def augmentation_label_handler(augmentation_fn):
     """ deals with functions that also return a label, by augmenting the data,
     but not the label (if present) """
