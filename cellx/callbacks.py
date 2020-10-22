@@ -1,23 +1,19 @@
 import io
 import itertools
 
+import matplotlib.pyplot as plt
+import numpy as np
 import tensorflow as tf
 import tensorflow.keras as K
-import numpy as np
 from sklearn.metrics import confusion_matrix
 
 
-import matplotlib.pyplot as plt
-
-
-def tensorboard_montage_callback(model: K.Model,
-                                 test_images: np.ndarray,
-                                 logdir: str):
+def tensorboard_montage_callback(model: K.Model, test_images: np.ndarray, logdir: str):
 
     """ create a callback that writes summary montage images to a tensorboard
     log. Useful while training networks that generate images as output """
 
-    file_writer_montage = tf.summary.create_file_writer(logdir + '/montage')
+    file_writer_montage = tf.summary.create_file_writer(logdir + "/montage")
 
     def log_montage(epoch, logs):
 
@@ -30,17 +26,19 @@ def tensorboard_montage_callback(model: K.Model,
         summary_montage = tf.concat([x_montage, x_hat_montage], axis=1)
 
         with file_writer_montage.as_default():
-            tf.summary.image('montage', summary_montage, step=epoch)
+            tf.summary.image("montage", summary_montage, step=epoch)
 
     # make a lambda call back
     return K.callbacks.LambdaCallback(on_epoch_end=log_montage)
 
 
-def tensorboard_confusion_matrix_callback(model: K.Model,
-                                          test_images: np.ndarray,
-                                          test_labels: list,
-                                          logdir: str,
-                                          class_names: list = []):
+def tensorboard_confusion_matrix_callback(
+    model: K.Model,
+    test_images: np.ndarray,
+    test_labels: list,
+    logdir: str,
+    class_names: list = [],
+):
 
     """ create a callback that writes summary confusin matrix to a tensorboard
     log. Useful while training networks that performs classification
@@ -51,10 +49,10 @@ def tensorboard_confusion_matrix_callback(model: K.Model,
         TODO(arl): THIS IS FOR BINARY CLASSIFCATION ONLY
     """
 
-    file_writer_cm = tf.summary.create_file_writer(logdir + '/cm')
+    file_writer_cm = tf.summary.create_file_writer(logdir + "/cm")
 
     def _sigmoid(x):
-        return 1. / (1. + np.exp(-x))
+        return 1.0 / (1.0 + np.exp(-x))
 
     def log_confusion_matrix(epoch, logs):
         # Use the model to predict the values from the validation dataset.
@@ -82,7 +80,7 @@ def plot_to_image(figure):
     """
     # Save the plot to a PNG in memory.
     buf = io.BytesIO()
-    plt.savefig(buf, format='png')
+    plt.savefig(buf, format="png")
     # Closing the figure prevents it from being displayed directly inside
     # the notebook.
     plt.close(figure)
@@ -94,26 +92,23 @@ def plot_to_image(figure):
     return image
 
 
-def plot_montage(x,
-                 max_images: int = 32,
-                 columns: int = 8,
-                 rows: int = 4):
+def plot_montage(x, max_images: int = 32, columns: int = 8, rows: int = 4):
     """ make a montage of the images """
 
     x = x[:max_images, ...]
 
-    rgb = tf.stack([x[..., 1],
-                    x[..., 0],
-                    x[..., 1]], axis=-1)
+    rgb = tf.stack([x[..., 1], x[..., 0], x[..., 1]], axis=-1)
 
-    rgb = tf.pad(tensor=rgb,
-                 paddings=[[0, 0], [1, 1], [1, 1], [0, 0]],
-                 mode='CONSTANT',
-                 constant_values=tf.reduce_min(input_tensor=rgb))
+    rgb = tf.pad(
+        tensor=rgb,
+        paddings=[[0, 0], [1, 1], [1, 1], [0, 0]],
+        mode="CONSTANT",
+        constant_values=tf.reduce_min(input_tensor=rgb),
+    )
 
     # clip the outputs
-    rgb = tf.clip_by_value(rgb, -3., 3.)
-    rgb = (rgb + 3.) / 6.
+    rgb = tf.clip_by_value(rgb, -3.0, 3.0)
+    rgb = (rgb + 3.0) / 6.0
 
     montage = []
     for r in range(rows):
@@ -125,8 +120,7 @@ def plot_montage(x,
     return tf.cast(montage[tf.newaxis, ...] * 255, tf.uint8)
 
 
-def plot_confusion_matrix(cm: np.ndarray,
-                          class_names: list):
+def plot_confusion_matrix(cm: np.ndarray, class_names: list):
     """
     Returns a matplotlib figure containing the plotted confusion matrix.
 
@@ -138,7 +132,7 @@ def plot_confusion_matrix(cm: np.ndarray,
         modified from: https://www.tensorflow.org/tensorboard/image_summaries
     """
     figure = plt.figure(figsize=(8, 8))
-    plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.imshow(cm, interpolation="nearest", cmap=plt.cm.Blues)
     plt.title("Confusion matrix")
     plt.colorbar()
     tick_marks = np.arange(len(class_names))
@@ -146,15 +140,15 @@ def plot_confusion_matrix(cm: np.ndarray,
     plt.yticks(tick_marks, class_names)
 
     # Normalize the confusion matrix.
-    cm = np.around(cm.astype('float') / cm.sum(axis=1)[:, np.newaxis], decimals=2)
+    cm = np.around(cm.astype("float") / cm.sum(axis=1)[:, np.newaxis], decimals=2)
 
     # Use white text if squares are dark; otherwise black.
-    threshold = cm.max() / 2.
+    threshold = cm.max() / 2.0
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         color = "white" if cm[i, j] > threshold else "black"
         plt.text(j, i, cm[i, j], horizontalalignment="center", color=color)
 
     plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
+    plt.ylabel("True label")
+    plt.xlabel("Predicted label")
     return figure

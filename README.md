@@ -9,15 +9,18 @@ Code for CellX and related projects
 ### Installation
 
 ```sh
-$ git clone https://github.com/quantumjot/cellx.git
-$ cd cellx
-$ pip install -e .
+git clone https://github.com/quantumjot/cellx.git
+cd cellx
+pip install -e .
 ```
 
-From python:
+### Pull requests
 
-```python
-import cellx
+Code is formatted by `black` and linted using `flake8`.  Install the pre-commit hooks like this:
+
+```sh
+pip install pre-commit
+pre-commit install
 ```
 
 ---
