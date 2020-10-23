@@ -5,17 +5,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as K
+from scipy.special import expit as sigmoid
 from scipy.special import softmax
 from sklearn.metrics import confusion_matrix
 
 
 def test_pred_binary(_pred):
     """Return the classification label from unscaled logits."""
-
-    def _sigmoid(x):
-        return 1.0 / (1.0 + np.exp(-x))
-
-    return np.round(_sigmoid(_pred)).astype(np.int)
+    return np.round(sigmoid(_pred)).astype(np.int)
 
 
 def test_pred_multiclass(_pred):
