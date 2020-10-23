@@ -5,13 +5,37 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as K
+from scipy.special import softmax
 from sklearn.metrics import confusion_matrix
 
 
-def tensorboard_montage_callback(model: K.Model, test_images: np.ndarray, logdir: str):
+def test_pred_binary(_pred):
+    """Return the classification label from unscaled logits."""
 
-    """ create a callback that writes summary montage images to a tensorboard
-    log. Useful while training networks that generate images as output """
+    def _sigmoid(x):
+        return 1.0 / (1.0 + np.exp(-x))
+
+    return np.round(_sigmoid(_pred)).astype(np.int)
+
+
+def test_pred_multiclass(_pred):
+    """Return the classification label from unscaled logits."""
+    return np.argmax(softmax(_pred, axis=-1), axis=-1).astype(np.int)
+
+
+def tensorboard_montage_callback(model: K.Model, test_images: np.ndarray, logdir: str):
+    """Create a callback that writes summary montage images to a tensorboard
+    log. Useful while training networks that generate images as output.
+
+    Parameters
+    ----------
+    model : Keras.Model
+        The model.
+    test_images : np.ndarray
+        An array of images or volumes. First axis is batch.
+    logdir : str
+        Path to the tensorboard log directory.
+    """
 
     file_writer_montage = tf.summary.create_file_writer(logdir + "/montage")
 
@@ -38,26 +62,41 @@ def tensorboard_confusion_matrix_callback(
     test_labels: list,
     logdir: str,
     class_names: list = [],
+    is_binary: bool = True,
 ):
 
-    """ create a callback that writes summary confusin matrix to a tensorboard
-    log. Useful while training networks that performs classification
+    """Create a callback that writes summary confusin matrix to a tensorboard
+    log. Useful while training networks that performs classification.
 
-    Notes:
-        modified from: https://www.tensorflow.org/tensorboard/image_summaries
+    Parameters
+    ----------
+    model : Keras.Model
+        The model.
+    test_images : np.ndarray
+        An array of images or volumes. First axis is batch.
+    test_labels : list
+        A list of labels, sparse categorical.
+    logdir : str
+        Path to the tensorboard log directory.
+    class_names : str
+        A list of the class names for each label.
+    is_binary : bool
+        Flag that determines whether the classification is binary or multiclass.
 
-        TODO(arl): THIS IS FOR BINARY CLASSIFCATION ONLY
+    Notes
+    -----
+    Modified from: https://www.tensorflow.org/tensorboard/image_summaries
     """
 
     file_writer_cm = tf.summary.create_file_writer(logdir + "/cm")
 
-    def _sigmoid(x):
-        return 1.0 / (1.0 + np.exp(-x))
+    # set the prediction function
+    test_pred_fn = test_pred_binary if is_binary else test_pred_multiclass
 
     def log_confusion_matrix(epoch, logs):
         # Use the model to predict the values from the validation dataset.
         test_pred_raw = model.predict(test_images)
-        test_pred = np.round(_sigmoid(test_pred_raw)).astype(np.int)
+        test_pred = test_pred_fn(test_pred_raw)
 
         # Calculate the confusion matrix.
         cm = confusion_matrix(test_labels, test_pred)
