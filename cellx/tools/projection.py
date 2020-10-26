@@ -55,14 +55,13 @@ class ManifoldProjection2D:
             self._images = []
 
     def _get_image(self, filename):
-        """ grab an image and resize it """
+        """Grab an image and resize it."""
         return _load_and_normalize(filename, output_shape=self._output_shape)
 
     def __call__(
         self, manifold: np.ndarray, bins: int = 32, components: tuple = (0, 1)
     ):
-
-        """ build the projection """
+        """Build the projection."""
 
         assert manifold.shape[0] == len(self._image_files)
 
