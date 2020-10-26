@@ -14,14 +14,8 @@ cd cellx
 pip install -e .
 ```
 
-### Pull requests
-
-Code is formatted by `black` and linted using `flake8`.  Install the pre-commit hooks like this:
-
-```sh
-pip install pre-commit
-pre-commit install
-```
+### Pull requests/Contributions
+See the contributing [guide](CONTRIBUTING.md).
 
 ---
 
