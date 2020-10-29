@@ -1,2 +1,2 @@
 def example_function() -> str:
-    return 'hello world'
+    return "hello world"
