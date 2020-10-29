@@ -9,16 +9,13 @@ Code for CellX and related projects
 ### Installation
 
 ```sh
-$ git clone https://github.com/quantumjot/cellx.git
-$ cd cellx
-$ pip install -e .
+git clone https://github.com/quantumjot/cellx.git
+cd cellx
+pip install -e .
 ```
 
-From python:
-
-```python
-import cellx
-```
+### Pull requests/Contributions
+See the contributing [guide](CONTRIBUTING.md).
 
 ---
 
@@ -26,3 +23,4 @@ import cellx
 * Alan R. Lowe (quantumjot, arl)
 * T. L. Laure Ho (laureho, tllh)
 * Christopher J. Soelistyo (chris-soelistyo, cjs)
+* Kristina Ulicna (KristinaUlicna, ku)
