@@ -3,7 +3,7 @@
 import tensorflow as tf
 from tensorflow import keras as K
 
-from cellx import layers
+from ..layers import Encoder2D
 
 input = K.Input(shape=(2,))
 encoder = layers.Encoder2D()(input)
