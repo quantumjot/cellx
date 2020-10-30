@@ -1,8 +1,13 @@
-# This will be the CNN classifier:
+# Building the CNN classifier:
 
 import tensorflow as tf
+from tensorflow import keras as K
 
-inputs = tf.keras.Input(shape=(2,))
-x = tf.keras.layers.Dense(4, activation=tf.nn.relu)(inputs)
-outputs = tf.keras.layers.Dense(4, activation=tf.nn.softmax)(x)
-model = tf.keras.Model(inputs=inputs, outputs=outputs)
+from cellx import layers
+
+input = K.Input(shape=(2,))
+encoder = layers.Encoder2D()(input)
+dense = K.layers.Dense(512, activation="relu")(encoder)
+output = K.layers.Dense(4, activation=tf.nn.softmax)(dense)
+
+classifier_model = K.Model(inputs=input, outputs=output)
