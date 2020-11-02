@@ -35,7 +35,7 @@ class ConvBlock2D(K.layers.Layer):
         activation: str = "swish",
         **kwargs
     ):
-        super(ConvBlock2D, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         self.conv = K.layers.Conv2D(
             filters, kernel_size, strides=strides, padding=padding
@@ -58,7 +58,7 @@ class ConvBlock2D(K.layers.Layer):
         return self.activation(conv)
 
     def get_config(self):
-        config = super(ConvBlock2D, self).get_config()
+        config = super().get_config()
         config.update(self._config)
         return config
 
@@ -97,7 +97,7 @@ class Encoder2D(K.layers.Layer):
         use_pooling: bool = True,
         **kwargs
     ):
-        super(Encoder2D, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         if use_pooling:
             self.pool = K.layers.MaxPooling2D()
@@ -133,7 +133,7 @@ class Encoder2D(K.layers.Layer):
         return x
 
     def get_config(self):
-        config = super(Encoder2D, self).get_config()
+        config = super().get_config()
         config.update(self._config)
         return config
 
@@ -168,7 +168,7 @@ class Decoder2D(K.layers.Layer):
         activation: str = "swish",
         **kwargs
     ):
-        super(Decoder2D, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
         # build the convolutional layer list
         self.layers = [
@@ -197,7 +197,7 @@ class Decoder2D(K.layers.Layer):
         return x
 
     def get_config(self):
-        config = super(Decoder2D, self).get_config()
+        config = super().get_config()
         config.update(self._config)
         return config
 
