@@ -20,7 +20,7 @@ def _get_custom_layers_dict() -> dict:
 
 
 def load_model(filename: str, **kwargs) -> K.Model:
-    """Convenience function load a Keras model with custom cellx layers.
+    """Convenience function to load a Keras model with custom cellx layers.
 
     Parameters
     ----------
