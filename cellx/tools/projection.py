@@ -32,38 +32,39 @@ class ManifoldProjection2D:
 
     Parameters
     ----------
-    image_files : list
+    images : list
     output_shape : tuple
     preload_images: bool
 
     """
 
     def __init__(
-        self,
-        image_files: list,
-        output_shape: tuple = (64, 64),
-        preload_images: bool = True,
+        self, images: list, output_shape: tuple = (64, 64), preload_images: bool = True,
     ):
 
         self._output_shape = output_shape
-        self._image_files = image_files
+        self._images = None
 
-        # preload the images
-        if preload_images:
-            self._images = [self._get_image(file) for file in tqdm(image_files)]
+        # if we have a list of image filenames, preload the images, or not
+        if all([isinstance(img, str) for img in images]):
+            # preload the images
+            if preload_images:
+                self._images = [self._get_image(file) for file in tqdm(images)]
         else:
-            self._images = []
+            if not isinstance(images, np.ndarray):
+                raise ValueError("Image type unknown.")
+            self._images = images
 
-    def _get_image(self, filename):
+    def _get_image(self, filename: str) -> np.ndarray:
         """Grab an image and resize it."""
         return _load_and_normalize(filename, output_shape=self._output_shape)
 
     def __call__(
         self, manifold: np.ndarray, bins: int = 32, components: tuple = (0, 1)
-    ):
+    ) -> tuple:
         """Build the projection."""
 
-        assert manifold.shape[0] == len(self._image_files)
+        assert manifold.shape[0] == len(self._images)
 
         # bin the manifold
         s, xe, ye, bn = binned_statistic_2d(
@@ -83,7 +84,7 @@ class ManifoldProjection2D:
             if b not in grid:
                 grid[b] = []
 
-            if self._images:
+            if self._images is not None:
                 grid[b].append(self._images[idx])
             else:
                 if not grid[b]:
