@@ -12,8 +12,8 @@ class ConvBlockBase(K.layers.Layer):
     ----------
     convolution : keras.layers.Conv
         A convolutional layer for 2 or 3-dimensions
-    layers : list
-        A list of kernels for each layer
+    filters : int
+        The number of convolutional filters
     kernel_size : tuple
         Size of the convolutional kernel
     padding : str
@@ -79,16 +79,17 @@ class ConvBlock3D(ConvBlockBase):
         super().__init__(convolution=K.layers.Conv3D, **kwargs)
 
 
-class EncoderBase(K.layers.Layer):
-    """Base class for encoders.
+class EncoderDecoderBase(K.layers.Layer):
+    """Base class for encoders and decoders.
 
     Parameters
     ----------
+    conv_block : ConvBlockBase
+        A convolutional block layer
+    pooling : K.layers.Layer, None
+        If not using pooling, use the stride of the convolution to reduce instead.
     layers : list
         A list of kernels for each layer
-    use_pooling : bool
-        Use pooling or not. If not using pooling, use the stride of the
-        convolution to reduce instead.
 
     Notes
     -----
@@ -99,30 +100,28 @@ class EncoderBase(K.layers.Layer):
     def __init__(
         self,
         conv_block: ConvBlockBase = ConvBlock2D,
+        pooling: K.layers.Layer = K.layers.MaxPooling2D,
         layers: list = [8, 16, 32],
-        use_pooling: bool = True,
         **kwargs
     ):
-
         super().__init__()
 
-        self.conv = conv_block
-
-        # if use_pooling:
-        #     self.pool = K.layers.MaxPooling2D()
-        #     strides = 1
-        # else:
-        #     self.pool = lambda x: x
-        #     strides = 2
+        if pooling is not None:
+            self.pooling = pooling
+            strides = 1
+        else:
+            self.pooling = lambda x: x
+            strides = 2
 
         # build the convolutional layer list
-        self.layers = [conv_block(**kwargs) for k in layers]
+        self.layers = [conv_block(strides=strides, **kwargs) for k in layers]
 
         self._config = {
             "conv_block": conv_block,
             "layers": layers,
-            "use_pooling": use_pooling,
+            "pooling": pooling,
         }
+        self._config.update(kwargs)
 
     def call(self, x):
         for layer in self.layers:
@@ -134,6 +133,11 @@ class EncoderBase(K.layers.Layer):
         config = super().get_config()
         config.update(self._config)
         return config
+
+
+# class Encoder2D(EncoderDecoderBase):
+#     def __init__(self, **kwargs):
+#         super().__init__(conv_block=ConvBlock2D, **kwargs)
 
 
 class Encoder2D(K.layers.Layer):
