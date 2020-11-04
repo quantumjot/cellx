@@ -59,7 +59,7 @@ class ConvBlockBase(K.layers.Layer):
         conv = self.norm(conv)
         return self.activation(conv)
 
-    def get_config(self):
+    def get_config(self) -> dict:
         config = super().get_config()
         config.update(self._config)
         return config
@@ -129,7 +129,7 @@ class EncoderDecoderBase(K.layers.Layer):
             x = self.pool(x)
         return x
 
-    def get_config(self):
+    def get_config(self) -> dict:
         config = super().get_config()
         config.update(self._config)
         return config
