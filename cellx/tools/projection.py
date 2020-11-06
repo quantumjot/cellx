@@ -32,7 +32,7 @@ class ManifoldProjection2D:
 
     Parameters
     ----------
-    images : list
+    images : list[str] or np.ndarray (N, W, H, C)
         A list of image patches in np.ndarray format.
     output_shape : tuple
         Final size of individual image patches in the projection space.
