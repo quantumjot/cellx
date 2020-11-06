@@ -32,10 +32,13 @@ class ManifoldProjection2D:
 
     Parameters
     ----------
-    images : list
+    images : list[str] or np.ndarray (N, W, H, C)
+        A list of image patches in np.ndarray format.
     output_shape : tuple
-    preload_images: bool
-
+        Final size of individual image patches in the projection space.
+    preload_images : bool
+        Preload images or not. Preload given a list of image filenames. If not,
+        load the list of image patches.
     """
 
     def __init__(
