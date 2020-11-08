@@ -71,8 +71,8 @@ class ManifoldProjection2D:
 
         # bin the manifold
         s, xe, ye, bn = binned_statistic_2d(
-            manifold[:, 0],
-            manifold[:, 1],
+            manifold[:, components[0]],
+            manifold[:, components[1]],
             [],
             bins=bins,
             statistic="count",
