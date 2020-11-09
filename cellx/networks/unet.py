@@ -1,4 +1,4 @@
-from enum import Enum, auto
+from enum import Enum
 
 from tensorflow import keras as K
 
@@ -6,10 +6,12 @@ from ..layers import Decoder2D, Encoder2D
 
 
 class SkipConnection(Enum):
-    ELEMENTWISE_ADD = auto()
-    ELEMENTWISE_MULTIPLY = auto()
-    CONCATENATE = auto()
-    NONE = auto()
+    """Skip connections for UNet."""
+
+    ELEMENTWISE_ADD = K.layers.Add
+    ELEMENTWISE_MULTIPLY = K.layers.Multiply
+    CONCATENATE = K.layers.Concatenate
+    NONE = lambda x: x[-1]
 
 
 class UNetBase(K.Model):
@@ -74,7 +76,7 @@ class UNetBase(K.Model):
         encoder: K.layers.Layer = Encoder2D,
         decoder: K.layers.Layer = Decoder2D,
         outputs: int = 1,
-        skip: SkipConnection = SkipConnection.CONCATENATE,
+        skip: str = "concatenate",
         name: str = "unet",
         **kwargs,
     ):
@@ -88,6 +90,12 @@ class UNetBase(K.Model):
 
         if decoder not in (Decoder2D,):
             raise ValueError(f"Decoder {decoder} not recognized.")
+
+        # convert the type here
+        if isinstance(skip, str):
+            self.skip = SkipConnection[skip.uppercase()]
+        else:
+            self.skip = skip
 
     def build(self, input_shape):
         pass
