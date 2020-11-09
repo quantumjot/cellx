@@ -60,13 +60,14 @@ class UNetBase(K.Model):
 
     def __init__(
         self,
-        encoder: K.layers.Layer,
-        decoder: K.layers.Layer,
+        encoder: K.layers.Layer = Encoder2D,
+        decoder: K.layers.Layer = Decoder2D,
         skip: str = "concat",
+        name: str = "unet",
         **kwargs,
     ):
 
-        super().__init__(**kwargs)
+        super().__init__(name=name, **kwargs)
         self.encoder = encoder
         self.decoder = decoder
 
@@ -76,8 +77,8 @@ class UNetBase(K.Model):
         if decoder not in (Decoder2D,):
             raise ValueError(f"Decoder {decoder} not recognized.")
 
-    def build(self):
+    def build(self, input_shape):
         pass
 
-    def call(self):
+    def call(self, inputs):
         pass
