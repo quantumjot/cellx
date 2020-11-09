@@ -1,3 +1,5 @@
+from typing import Optional, Union
+
 import tensorflow as tf
 from tensorflow import keras as K
 
@@ -28,7 +30,7 @@ class ConvBlockBase(K.layers.Layer):
         self,
         convolution: K.layers.Layer = K.layers.Conv2D,
         filters: int = 32,
-        kernel_size: tuple = 3,
+        kernel_size: Union[int, tuple] = 3,
         padding: str = "same",
         strides: int = 1,
         activation: str = "swish",
@@ -100,7 +102,7 @@ class EncoderDecoderBase(K.layers.Layer):
     def __init__(
         self,
         conv_block: ConvBlockBase = ConvBlock2D,
-        pooling: K.layers.Layer = K.layers.MaxPooling2D,
+        pooling: Optional[K.layers.Layer] = K.layers.MaxPooling2D,
         layers: list = [8, 16, 32],
         **kwargs
     ):
@@ -168,7 +170,7 @@ class Encoder2D(K.layers.Layer):
     def __init__(
         self,
         layers: list = [8, 16, 32],
-        kernel_size: tuple = (3, 3),
+        kernel_size: Union[int, tuple] = 3,
         padding: str = "same",
         activation: str = "swish",
         use_pooling: bool = True,
