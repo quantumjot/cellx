@@ -1,6 +1,15 @@
+from enum import Enum, auto
+
 from tensorflow import keras as K
 
 from ..layers import Decoder2D, Encoder2D
+
+
+class SkipConnection(Enum):
+    ELEMENTWISE_ADD = auto()
+    ELEMENTWISE_MULTIPLY = auto()
+    CONCATENATE = auto()
+    NONE = auto()
 
 
 class UNetBase(K.Model):
@@ -10,7 +19,7 @@ class UNetBase(K.Model):
     pad each convolution such that the output following convolution is the same
     size as the input. Also, bridges are elementwise operations of the filters
     to approach a residual-net architecture (resnet), although this can be
-    changed by the user.  The bridge_type property allows different bridge
+    changed by the user.  The skip property allows different skip connection
     types to be specified:
         - elementwise_add
         - elementwise_multiply
@@ -65,7 +74,7 @@ class UNetBase(K.Model):
         encoder: K.layers.Layer = Encoder2D,
         decoder: K.layers.Layer = Decoder2D,
         outputs: int = 1,
-        skip: str = "concat",
+        skip: SkipConnection = SkipConnection.CONCATENATE,
         name: str = "unet",
         **kwargs,
     ):
