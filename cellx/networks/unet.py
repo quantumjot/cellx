@@ -6,8 +6,6 @@ from ..layers import Decoder2D, Encoder2D
 class UNetBase(K.Model):
     """ UNet
 
-    ** This is the Base Class, use the sublasses UNet2D or UNet3D **
-
     A UNet class for image segmentation. This implementation differs in that we
     pad each convolution such that the output following convolution is the same
     size as the input. Also, bridges are elementwise operations of the filters
@@ -28,16 +26,20 @@ class UNetBase(K.Model):
     specify loss functions and bridge details that are specific to the
     particular architecture.
 
+    ** The final layer does not have an activation function. **
+
     Parameters
     ----------
     encoder : cellx.layers.Encoder, None
         An encoder layer.
     decoder : cellx.layers.Decoder, None
         A decoder layer.
-    bridge : str
-        The bridge type
-    n_outputs : int
+    skip : str
+        The skip connection type.
+    outputs : int
         The number of output channels.
+    name : str
+        The name of the network.
 
     Notes
     -----
@@ -62,6 +64,7 @@ class UNetBase(K.Model):
         self,
         encoder: K.layers.Layer = Encoder2D,
         decoder: K.layers.Layer = Decoder2D,
+        outputs: int = 1,
         skip: str = "concat",
         name: str = "unet",
         **kwargs,
