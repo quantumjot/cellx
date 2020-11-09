@@ -32,14 +32,11 @@ class ManifoldProjection2D:
 
     Parameters
     ----------
-    images : list [str] or np.ndarray (N, W, H, C)
-        A list of image filenames or a numpy array with dimensions
-            N - number of images
-            W - width of image
-            H - height of image
-            C - number of channels
-    output_shape : tuple
-        Final size of individual image patches in the projection space.
+    images : list of str or (N, W, H, C) np.ndarray of int
+        A list of image filenames or a numpy array of N images, width W, height
+        H, and C channels.
+    output_shape : tuple of int
+        Final size to reshape individual image patches to for the montage.
     preload_images : bool
         Preload images if a list of image filenames is provided, or not.
     """
