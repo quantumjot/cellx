@@ -1,5 +1,7 @@
 from tensorflow import keras as K
 
+from ..layers import Decoder2D, Encoder2D
+
 
 class UNetBase(K.Model):
     """ UNet
@@ -56,5 +58,26 @@ class UNetBase(K.Model):
     https://arxiv.org/abs/1512.00567
     """
 
-    def __init__(self):
+    def __init__(
+        self,
+        encoder: K.layers.Layer,
+        decoder: K.layers.Layer,
+        skip: str = "concat",
+        **kwargs,
+    ):
+
+        super().__init__(**kwargs)
+        self.encoder = encoder
+        self.decoder = decoder
+
+        if encoder not in (Encoder2D,):
+            raise ValueError(f"Encoder {encoder} not recognized.")
+
+        if decoder not in (Decoder2D,):
+            raise ValueError(f"Decoder {decoder} not recognized.")
+
+    def build(self):
+        pass
+
+    def call(self):
         pass
