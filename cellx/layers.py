@@ -16,7 +16,7 @@ class ConvBlockBase(K.layers.Layer):
         A convolutional layer for 2 or 3-dimensions
     filters : int
         The number of convolutional filters
-    kernel_size : tuple
+    kernel_size : int, tuple
         Size of the convolutional kernel
     padding : str
         Padding type for convolution
