@@ -92,10 +92,9 @@ class UNetBase(K.Model):
             raise ValueError(f"Decoder {decoder} not recognized.")
 
         # convert the type here
-        if isinstance(skip, str):
-            self.skip = SkipConnection[skip.uppercase()]
-        else:
-            self.skip = skip
+        if skip.uppercase() not in SkipConnection:
+            raise ValueError(f"Skip connection {skip} not recognized.")
+        self.skip = SkipConnection[skip.uppercase()]
 
     def build(self, input_shape):
         pass
