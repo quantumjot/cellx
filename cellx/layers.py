@@ -47,13 +47,11 @@ class ConvBlockBase(K.layers.Layer):
 
         # store the config so that we can restore it later
         self._config = {
-            "convolution": convolution,
             "filters": filters,
             "kernel_size": kernel_size,
             "padding": padding,
             "strides": strides,
             "activation": activation,
-            "name": name,
         }
         self._config.update(kwargs)
 
@@ -125,8 +123,7 @@ class EncoderDecoderBase(K.layers.Layer):
         self.layers = [convolution(strides=strides) for k in layers]
 
         self._config = {
-            "convolution": convolution,
-            "sampling": sampling,
+            "sampling": self.sampling,
             "layers": layers,
         }
         self._config.update(kwargs)
@@ -143,8 +140,10 @@ class EncoderDecoderBase(K.layers.Layer):
 class Encoder2D(EncoderDecoderBase):
     """Encoder2D."""
 
-    def __init__(self, **kwargs):
-        super().__init__(convolution=ConvBlock2D, **kwargs)
+    def __init__(
+        self, convolution=ConvBlock2D, sampling=K.layers.MaxPooling2D, **kwargs
+    ):
+        super().__init__(convolution=convolution, sampling=sampling, **kwargs)
 
     def call(self, x, training: Optional[bool] = None):
         for layer in self.layers:
@@ -156,10 +155,10 @@ class Encoder2D(EncoderDecoderBase):
 class Encoder3D(EncoderDecoderBase):
     """Encoder3D."""
 
-    def __init__(self, **kwargs):
-        super().__init__(
-            convolution=ConvBlock3D, sampling=K.layers.MaxPooling3D, **kwargs
-        )
+    def __init__(
+        self, convolution=ConvBlock3D, sampling=K.layers.MaxPooling3D, **kwargs
+    ):
+        super().__init__(convolution=convolution, sampling=sampling, **kwargs)
 
     def call(self, x, training: Optional[bool] = None):
         for layer in self.layers:
@@ -171,10 +170,10 @@ class Encoder3D(EncoderDecoderBase):
 class Decoder2D(EncoderDecoderBase):
     """Decoder2D."""
 
-    def __init__(self, **kwargs):
-        super().__init__(
-            convolution=ConvBlock2D, sampling=K.layers.UpSampling2D, **kwargs
-        )
+    def __init__(
+        self, convolution=ConvBlock2D, sampling=K.layers.UpSampling2D, **kwargs
+    ):
+        super().__init__(convolution=convolution, sampling=sampling, **kwargs)
 
     def call(self, x, training: Optional[bool] = None):
         for layer in self.layers:
@@ -186,10 +185,10 @@ class Decoder2D(EncoderDecoderBase):
 class Decoder3D(EncoderDecoderBase):
     """Decoder3D."""
 
-    def __init__(self, **kwargs):
-        super().__init__(
-            convolution=ConvBlock2D, sampling=K.layers.UpSampling3D, **kwargs
-        )
+    def __init__(
+        self, convolution=ConvBlock3D, sampling=K.layers.UpSampling3D, **kwargs
+    ):
+        super().__init__(convolution=convolution, sampling=sampling, **kwargs)
 
     def call(self, x, training: Optional[bool] = None):
         for layer in self.layers:
