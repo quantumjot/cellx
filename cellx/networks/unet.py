@@ -1,8 +1,9 @@
 from enum import Enum
+from typing import List
 
 from tensorflow import keras as K
 
-from ..layers import Decoder2D, Encoder2D
+from ..layers import ConvBlock2D
 
 
 class SkipConnection(Enum):
@@ -41,10 +42,10 @@ class UNetBase(K.Model):
 
     Parameters
     ----------
-    encoder : cellx.layers.Encoder, None
-        An encoder layer.
-    decoder : cellx.layers.Decoder, None
-        A decoder layer.
+    convolution : K.layers.Layer
+    downscaling : K.layers.Layer
+    upscaling : K.layers.Layer
+    layers : list of ints
     skip : str
         The skip connection type.
     outputs : int
@@ -73,8 +74,10 @@ class UNetBase(K.Model):
 
     def __init__(
         self,
-        encoder: K.layers.Layer = Encoder2D,
-        decoder: K.layers.Layer = Decoder2D,
+        convolution: K.layers.Layer = ConvBlock2D,
+        downscaling: K.layers.Layer = K.layers.MaxPooling2D,
+        upscaling: K.layers.Layer = K.layers.Conv2DTranspose,
+        layers: List[int] = [8, 16, 32],
         outputs: int = 1,
         skip: str = "concatenate",
         name: str = "unet",
@@ -82,14 +85,6 @@ class UNetBase(K.Model):
     ):
 
         super().__init__(name=name, **kwargs)
-        self.encoder = encoder
-        self.decoder = decoder
-
-        if encoder not in (Encoder2D,):
-            raise ValueError(f"Encoder {encoder} not recognized.")
-
-        if decoder not in (Decoder2D,):
-            raise ValueError(f"Decoder {decoder} not recognized.")
 
         # convert the type here
         if skip.uppercase() not in SkipConnection:
