@@ -89,7 +89,8 @@ class EncoderDecoderBase(K.layers.Layer):
     convolution : ConvBlockBase
         A convolutional block layer.
     sampling : K.layers.Layer, None
-        If not using pooling, use the stride of the convolution to reduce instead.
+        If not using pooling or upscaling, the stride of the convolution can be
+        used instead.
     layers : list
         A list of kernels for each layer.
 
@@ -97,6 +98,10 @@ class EncoderDecoderBase(K.layers.Layer):
     -----
     The list of kernels can be used to infer the number of conv-pool layers
     in the encoder.
+
+    The type of sampling (pooling, transpose convolution or stride) and the
+    order (before or after convoluton) varies between the derived Encoder and
+    Decoder classes.
     """
 
     def __init__(
