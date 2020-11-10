@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import tensorflow as tf
 from tensorflow import keras as K
@@ -105,7 +105,7 @@ class EncoderDecoderBase(K.layers.Layer):
         self,
         conv_block: ConvBlockBase = ConvBlock2D,
         pooling: Optional[K.layers.Layer] = K.layers.MaxPooling2D,
-        layers: list = [8, 16, 32],
+        layers: List[int] = [8, 16, 32],
         **kwargs
     ):
         super().__init__()
@@ -171,7 +171,7 @@ class Encoder2D(K.layers.Layer):
 
     def __init__(
         self,
-        layers: list = [8, 16, 32],
+        layers: List[int] = [8, 16, 32],
         kernel_size: Union[int, tuple] = 3,
         padding: str = "same",
         activation: str = "swish",
