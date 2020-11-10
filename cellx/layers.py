@@ -140,7 +140,7 @@ class EncoderDecoderBase(K.layers.Layer):
         return config
 
 
-class Encoder2D_Test(EncoderDecoderBase):
+class Encoder2D(EncoderDecoderBase):
     """Encoder2D."""
 
     def __init__(self, **kwargs):
@@ -153,7 +153,7 @@ class Encoder2D_Test(EncoderDecoderBase):
         return x
 
 
-class Encoder3D_Test(EncoderDecoderBase):
+class Encoder3D(EncoderDecoderBase):
     """Encoder3D."""
 
     def __init__(self, **kwargs):
@@ -168,7 +168,7 @@ class Encoder3D_Test(EncoderDecoderBase):
         return x
 
 
-class Decoder2D_Test(EncoderDecoderBase):
+class Decoder2D(EncoderDecoderBase):
     """Decoder2D."""
 
     def __init__(self, **kwargs):
@@ -183,7 +183,7 @@ class Decoder2D_Test(EncoderDecoderBase):
         return x
 
 
-class Decoder3D_Test(EncoderDecoderBase):
+class Decoder3D(EncoderDecoderBase):
     """Decoder3D."""
 
     def __init__(self, **kwargs):
