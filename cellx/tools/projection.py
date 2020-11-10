@@ -65,14 +65,33 @@ class ManifoldProjection2D:
     def __call__(
         self, manifold: np.ndarray, bins: int = 32, components: tuple = (0, 1)
     ) -> tuple:
-        """Build the projection."""
+        """Build the projection.
+
+        Parameters
+        ----------
+        manifold : np.ndarray
+            Numpy array of the manifold projection.
+        bins : int
+            Number of two-dimensional bins to group the manifold examples in.
+        components : tuple of int
+            Dimensions of manifold to use when creating the projection.
+
+        Returns
+        -------
+        imgrid : np.ndarray
+            An image with example image patches from the manifold arranged on a
+            grid.
+        extent : tuple
+            Delimits the minimum and maximum bin edges, in each dimension, used
+            to create the result.
+        """
 
         assert manifold.shape[0] == len(self._images)
 
         # bin the manifold
         s, xe, ye, bn = binned_statistic_2d(
-            manifold[:, 0],
-            manifold[:, 1],
+            manifold[:, components[0]],
+            manifold[:, components[1]],
             [],
             bins=bins,
             statistic="count",
@@ -125,9 +144,7 @@ class ManifoldProjection2D:
 
             imgrid[blockx, blocky, :] = im
 
-        # return the extent, i.e. the mapping back to the components of the
-        # manifold
-        extent = [min(xe), max(xe), min(ye), max(ye)]
+        extent = (min(xe), max(xe), min(ye), max(ye))
 
         return imgrid, extent
 
