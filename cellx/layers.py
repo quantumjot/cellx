@@ -13,17 +13,17 @@ class ConvBlockBase(K.layers.Layer):
     Parameters
     ----------
     convolution : keras.layers.Conv
-        A convolutional layer for 2 or 3-dimensions
+        A convolutional layer for 2 or 3-dimensions.
     filters : int
-        The number of convolutional filters
+        The number of convolutional filters.
     kernel_size : int, tuple
-        Size of the convolutional kernel
+        Size of the convolutional kernel.
     padding : str
-        Padding type for convolution
+        Padding type for convolution.
     activation : str
-        Name of activation function
+        Name of activation function.
     strides : int
-        Stride of the convolution
+        Stride of the convolution.
     """
 
     def __init__(
@@ -88,12 +88,12 @@ class EncoderDecoderBase(K.layers.Layer):
 
     Parameters
     ----------
-    conv_block : ConvBlockBase
-        A convolutional block layer
-    pooling : K.layers.Layer, None
+    convolution : ConvBlockBase
+        A convolutional block layer.
+    sampling : K.layers.Layer, None
         If not using pooling, use the stride of the convolution to reduce instead.
     layers : list
-        A list of kernels for each layer
+        A list of kernels for each layer.
 
     Notes
     -----
@@ -103,35 +103,36 @@ class EncoderDecoderBase(K.layers.Layer):
 
     def __init__(
         self,
-        conv_block: ConvBlockBase = ConvBlock2D,
-        pooling: Optional[K.layers.Layer] = K.layers.MaxPooling2D,
+        convolution: ConvBlockBase = ConvBlock2D,
+        sampling: Optional[K.layers.Layer] = K.layers.MaxPooling2D,
         layers: List[int] = [8, 16, 32],
+        name: str = "EncoderDecoderBase",
         **kwargs
     ):
-        super().__init__()
+        super().__init__(name=name, **kwargs)
 
-        if pooling is not None:
-            self.pooling = pooling
+        if sampling is not None:
+            if not isinstance(sampling, K.layers.Layer):
+                self.sampling = sampling()
+            else:
+                self.sampling = sampling
             strides = 1
         else:
-            self.pooling = lambda x: x
+            self.sampling = lambda x: x
             strides = 2
 
         # build the convolutional layer list
-        self.layers = [conv_block(strides=strides, **kwargs) for k in layers]
+        self.layers = [convolution(strides=strides) for k in layers]
 
         self._config = {
-            "conv_block": conv_block,
+            "convolution": convolution,
+            "sampling": sampling,
             "layers": layers,
-            "pooling": pooling,
         }
         self._config.update(kwargs)
 
-    def call(self, x):
-        for layer in self.layers:
-            x = layer(x)
-            x = self.pool(x)
-        return x
+    def call(self, x, training: Optional[bool] = None):
+        raise NotImplementedError
 
     def get_config(self) -> dict:
         config = super().get_config()
@@ -139,148 +140,62 @@ class EncoderDecoderBase(K.layers.Layer):
         return config
 
 
-# class Encoder2D(EncoderDecoderBase):
-#     def __init__(self, **kwargs):
-#         super().__init__(conv_block=ConvBlock2D, **kwargs)
+class Encoder2D_Test(EncoderDecoderBase):
+    """Encoder2D."""
 
-
-class Encoder2D(K.layers.Layer):
-    """Encoder2D
-
-    Keras layer to build a stacked encoder using ConvBlock2D.
-
-    Parameters
-    ----------
-    layers : list
-        A list of kernels for each layer
-    kernel_size : tuple
-        Size of the convolutional kernel
-    padding : str
-        Padding type for convolution
-    activation : str
-        Name of activation function
-    use_pooling : bool
-        Use pooling or not. If not using pooling, use the stride of the
-        convolution to reduce instead.
-
-    Notes
-    -----
-    The list of kernels can be used to infer the number of conv-pool layers
-    in the encoder.
-    """
-
-    def __init__(
-        self,
-        layers: List[int] = [8, 16, 32],
-        kernel_size: Union[int, tuple] = 3,
-        padding: str = "same",
-        activation: str = "swish",
-        use_pooling: bool = True,
-        **kwargs
-    ):
-        super().__init__(**kwargs)
-
-        if use_pooling:
-            self.pool = K.layers.MaxPooling2D()
-            strides = 1
-        else:
-            self.pool = lambda x: x
-            strides = 2
-
-        # build the convolutional layer list
-        self.layers = [
-            ConvBlock2D(
-                filters=k,
-                kernel_size=kernel_size,
-                padding=padding,
-                activation=activation,
-                strides=strides,
-            )
-            for k in layers
-        ]
-
-        self._config = {
-            "layers": layers,
-            "kernel_size": kernel_size,
-            "padding": padding,
-            "activation": activation,
-            "use_pooling": use_pooling,
-        }
+    def __init__(self, **kwargs):
+        super().__init__(convolution=ConvBlock2D, **kwargs)
 
     def call(self, x, training: Optional[bool] = None):
         for layer in self.layers:
             x = layer(x, training=training)
-            x = self.pool(x)
+            x = self.sampling(x)
         return x
 
-    def get_config(self):
-        config = super().get_config()
-        config.update(self._config)
-        return config
 
+class Encoder3D_Test(EncoderDecoderBase):
+    """Encoder3D."""
 
-class Decoder2D(K.layers.Layer):
-    """ Decoder2D
-
-    Keras layer to build a stacked decoder using ConvBlock2D
-
-    Parameters
-    ----------
-    layers : list
-        A list of kernels for each layer
-    kernel_size : tuple
-        Size of the convolutional kernel
-    padding : str
-        Padding type for convolution
-    activation : str
-        Name of activation function
-
-    Notes
-    -----
-        The list of kernels can be used to infer the number of conv-pool layers
-        in the encoder.
-    """
-
-    def __init__(
-        self,
-        layers: list = [8, 16, 32],
-        kernel_size: tuple = (3, 3),
-        padding: str = "same",
-        activation: str = "swish",
-        **kwargs
-    ):
-        super().__init__(**kwargs)
-
-        # build the convolutional layer list
-        self.layers = [
-            ConvBlock2D(
-                filters=k,
-                kernel_size=kernel_size,
-                padding=padding,
-                activation=activation,
-            )
-            for k in layers
-        ]
-
-        self.upsample = K.layers.UpSampling2D()
-
-        self._config = {
-            "layers": layers,
-            "kernel_size": kernel_size,
-            "padding": padding,
-            "activation": activation,
-        }
+    def __init__(self, **kwargs):
+        super().__init__(
+            convolution=ConvBlock3D, sampling=K.layers.MaxPooling3D, **kwargs
+        )
 
     def call(self, x, training: Optional[bool] = None):
         for layer in self.layers:
-            x = self.upsample(x)
+            x = layer(x, training=training)
+            x = self.sampling(x)
+        return x
+
+
+class Decoder2D_Test(EncoderDecoderBase):
+    """Decoder2D."""
+
+    def __init__(self, **kwargs):
+        super().__init__(
+            convolution=ConvBlock2D, sampling=K.layers.UpSampling2D, **kwargs
+        )
+
+    def call(self, x, training: Optional[bool] = None):
+        for layer in self.layers:
+            x = self.sampling(x)
             x = layer(x, training=training)
         return x
 
-    def get_config(self):
-        config = super().get_config()
-        config.update(self._config)
-        return config
+
+class Decoder3D_Test(EncoderDecoderBase):
+    """Decoder3D."""
+
+    def __init__(self, **kwargs):
+        super().__init__(
+            convolution=ConvBlock2D, sampling=K.layers.UpSampling3D, **kwargs
+        )
+
+    def call(self, x, training: Optional[bool] = None):
+        for layer in self.layers:
+            x = self.sampling(x)
+            x = layer(x, training=training)
+        return x
 
 
 class Sampling(K.layers.Layer):
