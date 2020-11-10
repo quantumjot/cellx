@@ -32,7 +32,7 @@ class ManifoldProjection2D:
 
     Parameters
     ----------
-    images : list of str or (N, W, H, C) np.ndarray of int
+    images : list of str or (N, W, H, C) np.ndarray
         A list of image filenames or a numpy array of N images, width W, height
         H, and C channels.
     output_shape : tuple of int
