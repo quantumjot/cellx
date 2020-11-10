@@ -57,10 +57,10 @@ class ConvBlockBase(K.layers.Layer):
         }
         self._config.update(kwargs)
 
-    def call(self, x):
+    def call(self, x, training: Optional[bool] = None):
         """Return the result of the normalized convolution."""
         conv = self.conv(x)
-        conv = self.norm(conv)
+        conv = self.norm(conv, training=training)
         return self.activation(conv)
 
     def get_config(self) -> dict:
@@ -207,9 +207,9 @@ class Encoder2D(K.layers.Layer):
             "use_pooling": use_pooling,
         }
 
-    def call(self, x):
+    def call(self, x, training: Optional[bool] = None):
         for layer in self.layers:
-            x = layer(x)
+            x = layer(x, training=training)
             x = self.pool(x)
         return x
 
@@ -271,10 +271,10 @@ class Decoder2D(K.layers.Layer):
             "activation": activation,
         }
 
-    def call(self, x):
+    def call(self, x, training: Optional[bool] = None):
         for layer in self.layers:
             x = self.upsample(x)
-            x = layer(x)
+            x = layer(x, training=training)
         return x
 
     def get_config(self):
