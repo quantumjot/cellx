@@ -74,14 +74,14 @@ class ManifoldProjection2D:
         bins : int
             Number of two-dimensional bins to group the manifold examples in.
         components : tuple of int
-            Dimensions of the manifold projection.
+            Dimensions of manifold to use when creating the projection.
 
         Returns
         -------
         imgrid : np.ndarray
-            A grid to assign image patches to.
+            An image with example image patches from the manifold arranged on a grid.
         extent : list of float
-            Delimiting bin edge values that allow to map onto the 2D projection.
+            Delimits the minimum and maximum bin edges, in each dimension, used to create the result.
         """
 
         assert manifold.shape[0] == len(self._images)
