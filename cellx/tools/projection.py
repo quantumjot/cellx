@@ -79,9 +79,11 @@ class ManifoldProjection2D:
         Returns
         -------
         imgrid : np.ndarray
-            An image with example image patches from the manifold arranged on a grid.
-        extent : list of float
-            Delimits the minimum and maximum bin edges, in each dimension, used to create the result.
+            An image with example image patches from the manifold arranged on a
+            grid.
+        extent : tuple
+            Delimits the minimum and maximum bin edges, in each dimension, used
+            to create the result.
         """
 
         assert manifold.shape[0] == len(self._images)
@@ -142,7 +144,7 @@ class ManifoldProjection2D:
 
             imgrid[blockx, blocky, :] = im
 
-        extent = [min(xe), max(xe), min(ye), max(ye)]
+        extent = (min(xe), max(xe), min(ye), max(ye))
 
         return imgrid, extent
 
