@@ -34,9 +34,10 @@ class ConvBlockBase(K.layers.Layer):
         padding: str = "same",
         strides: int = 1,
         activation: str = "swish",
+        name: str = "ConvBlock",
         **kwargs
     ):
-        super().__init__()
+        super().__init__(name=name)
 
         self.conv = convolution(
             filters, kernel_size, strides=strides, padding=padding, **kwargs,
@@ -52,11 +53,12 @@ class ConvBlockBase(K.layers.Layer):
             "padding": padding,
             "strides": strides,
             "activation": activation,
+            "name": name,
         }
         self._config.update(kwargs)
 
     def call(self, x):
-        """ return the result of the normalized convolution """
+        """Return the result of the normalized convolution."""
         conv = self.conv(x)
         conv = self.norm(conv)
         return self.activation(conv)
@@ -71,14 +73,14 @@ class ConvBlock2D(ConvBlockBase):
     """ConvBlock2D."""
 
     def __init__(self, **kwargs):
-        super().__init__(convolution=K.layers.Conv2D, **kwargs)
+        super().__init__(convolution=K.layers.Conv2D, name="ConvBlock2D", **kwargs)
 
 
 class ConvBlock3D(ConvBlockBase):
     """ConvBlock3D."""
 
     def __init__(self, **kwargs):
-        super().__init__(convolution=K.layers.Conv3D, **kwargs)
+        super().__init__(convolution=K.layers.Conv3D, name="ConvBlock3D", **kwargs)
 
 
 class EncoderDecoderBase(K.layers.Layer):
