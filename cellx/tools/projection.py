@@ -32,13 +32,13 @@ class ManifoldProjection2D:
 
     Parameters
     ----------
-    images : list[str] or np.ndarray (N, W, H, C)
-        A list of image patches in np.ndarray format.
-    output_shape : tuple
-        Final size of individual image patches in the projection space.
+    images : list of str or (N, W, H, C) np.ndarray
+        A list of image filenames or a numpy array of N images, width W, height
+        H, and C channels.
+    output_shape : tuple of int
+        Final size to reshape individual image patches to for the montage.
     preload_images : bool
-        Preload images or not. Preload given a list of image filenames. If not,
-        load the list of image patches.
+        Preload images if a list of image filenames is provided, or not.
     """
 
     def __init__(
@@ -48,9 +48,9 @@ class ManifoldProjection2D:
         self._output_shape = output_shape
         self._images = None
 
-        # if we have a list of image filenames, preload the images, or not
+        # check if `images` parameter is a list of strings or a numpy array
+        # to preload images, or not
         if all([isinstance(img, str) for img in images]):
-            # preload the images
             if preload_images:
                 self._images = [self._get_image(file) for file in tqdm(images)]
         else:
