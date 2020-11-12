@@ -125,7 +125,7 @@ class EncoderDecoderBase(K.layers.Layer):
             strides = 2
 
         # build the convolutional layer list
-        self.layers = [convolution(strides=strides) for k in layers]
+        self.layers = [convolution(filters=k, strides=strides) for k in layers]
 
         self._config = {
             "sampling": self.sampling,
