@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 from tensorflow import keras as K
 
@@ -9,13 +9,16 @@ from ..layers import ConvBlock2D
 class SkipConnection(Enum):
     """Skip connections for UNet."""
 
-    ELEMENTWISE_ADD = K.layers.Add
-    ELEMENTWISE_MULTIPLY = K.layers.Multiply
-    CONCATENATE = K.layers.Concatenate
+    ELEMENTWISE_ADD = K.layers.Add()
+    ELEMENTWISE_MULTIPLY = K.layers.Multiply()
+    CONCATENATE = K.layers.Concatenate(axis=-1)
     NONE = lambda x: x[-1]
 
+    def __call__(self, inputs):
+        return self.value(inputs)
 
-class UNetBase(K.Model):
+
+class UNet(K.Model):
     """ UNet
 
     A UNet class for image segmentation. This implementation differs in that we
@@ -43,8 +46,8 @@ class UNetBase(K.Model):
     Parameters
     ----------
     convolution : K.layers.Layer
-    downscaling : K.layers.Layer
-    upscaling : K.layers.Layer
+    downsampling : K.layers.Layer
+    upsampling : K.layers.Layer
     layers : list of ints
     skip : str
         The skip connection type.
@@ -75,8 +78,8 @@ class UNetBase(K.Model):
     def __init__(
         self,
         convolution: K.layers.Layer = ConvBlock2D,
-        downscaling: K.layers.Layer = K.layers.MaxPooling2D,
-        upscaling: K.layers.Layer = K.layers.Conv2DTranspose,
+        downsampling: K.layers.Layer = K.layers.MaxPooling2D(pool_size=(2, 2)),
+        upsampling: K.layers.Layer = K.layers.UpSampling2D(size=(2, 2)),
         layers: List[int] = [8, 16, 32],
         outputs: int = 1,
         skip: str = "concatenate",
@@ -87,12 +90,17 @@ class UNetBase(K.Model):
         super().__init__(name=name, **kwargs)
 
         # convert the type here
-        if skip.uppercase() not in SkipConnection:
+        if skip.upper() not in SkipConnection._member_names_:
             raise ValueError(f"Skip connection {skip} not recognized.")
-        self.skip = SkipConnection[skip.uppercase()]
+        self.skip = SkipConnection[skip.upper()]
 
-    def build(self, input_shape):
+        self.convolution = convolution
+        self.downsampling = downsampling
+        self.upsampling = upsampling
+
+    def build(self, input_shape: tuple):
+        """Build the UNet"""
         pass
 
-    def call(self, inputs):
+    def call(self, x, training: Optional[bool] = None):
         pass
