@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from .handler import augmentation_label_handler
+from .utils import augmentation_label_handler
 
 
 @augmentation_label_handler
@@ -10,8 +10,7 @@ def augment_timeseries_dummy(x: tf.Tensor):
 
 
 @augmentation_label_handler
-def augment_timeseries_shift(x: tf.Tensor,
-                             max_shift: int = 10):
+def augment_timeseries_shift(x: tf.Tensor, max_shift: int = 10):
     """ randomly shift the time series """
 
     # shift the data by removing a random number of later time points
@@ -20,8 +19,7 @@ def augment_timeseries_shift(x: tf.Tensor,
 
 
 @augmentation_label_handler
-def augment_timeseries_crop(x: tf.Tensor,
-                            min_length: int = 30):
+def augment_timeseries_crop(x: tf.Tensor, min_length: int = 30):
     """ randomly remove part of the beginning of the time series """
 
     max_crop = tf.shape(x)[0] - min_length
@@ -30,8 +28,7 @@ def augment_timeseries_crop(x: tf.Tensor,
 
 
 @augmentation_label_handler
-def augment_timeseries_swap(x: tf.Tensor,
-                            n_swaps: int = 10):
+def augment_timeseries_swap(x: tf.Tensor, n_swaps: int = 10):
     """ randomly swap parts of the time series """
 
     # get the indices to update
@@ -55,8 +52,7 @@ def augment_timeseries_shuffle(x: tf.Tensor):
 
 
 @augmentation_label_handler
-def augment_timeseries_noise(x: tf.Tensor,
-                             stddev_spread: float = 0.15):
+def augment_timeseries_noise(x: tf.Tensor, stddev_spread: float = 0.15):
     """ add noise to the timeseries """
 
     # add white noise that scales with the variance of the data
@@ -66,9 +62,9 @@ def augment_timeseries_noise(x: tf.Tensor,
 
 
 @augmentation_label_handler
-def augment_timeseries_corrupt(x: tf.Tensor,
-                               n_corrupt: int = 10,
-                               stddev_spread: float = 0.15):
+def augment_timeseries_corrupt(
+    x: tf.Tensor, n_corrupt: int = 10, stddev_spread: float = 0.15
+):
     """ corrupt some data from the timeseries by replacing with noise """
 
     stddev = stddev_spread * (tf.reduce_max(x) - tf.reduce_min(x))
@@ -83,13 +79,12 @@ def augment_timeseries_corrupt(x: tf.Tensor,
 
 
 @augmentation_label_handler
-def augment_timeseries_dropout(x: tf.Tensor,
-                               n_dropout: int = 10):
+def augment_timeseries_dropout(x: tf.Tensor, n_dropout: int = 10):
     """ dropout some observation timepoints, pad from beginning to maintain
     size """
 
     # get the indices to update
-    idx = tf.random.shuffle(tf.range(tf.shape(x)[0]))[:tf.shape(x)[0] - n_dropout]
+    idx = tf.random.shuffle(tf.range(tf.shape(x)[0]))[: tf.shape(x)[0] - n_dropout]
     dropout = tf.gather(x, idx, axis=0)
     pad_shape = tf.concat([[n_dropout], tf.shape(x)[1:]], axis=0)
     # re-insert the shuffled time-points in the original sequence at idx
