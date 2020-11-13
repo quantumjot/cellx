@@ -32,14 +32,6 @@ class UNet(K.Model):
         - concatenate
         - None (no bridge information, resembles an autoencoder)
 
-    Image autoencoders can also be subclassed from this structure, by
-    removing the bridge information.
-
-    Note that the UNet class should not be used on it's own. Generally
-    there are subclassed versions which inherit the main features but
-    specify loss functions and bridge details that are specific to the
-    particular architecture.
-
     ** The final layer does not have an activation function. **
 
     Parameters
@@ -54,8 +46,8 @@ class UNet(K.Model):
         A list of filters for each layer.
     skip : str
         The skip connection type.
-    outputs : int
-        The number of output channels.
+    output_filters : int
+        The number of output filters.
     name : str
         The name of the network.
 
@@ -84,7 +76,7 @@ class UNet(K.Model):
         downsampling: Optional[K.layers.Layer] = K.layers.MaxPooling2D,
         upsampling: Optional[K.layers.Layer] = K.layers.UpSampling2D,
         layers: List[int] = [8, 16, 32],
-        outputs: int = 1,
+        output_filters: int = 1,
         skip: str = "concatenate",
         name: str = "unet",
         **kwargs,
@@ -106,7 +98,7 @@ class UNet(K.Model):
             for i, k in enumerate(layers[:-1])
         ]
         self._decoder_output = convolution(
-            filters=outputs, kernel_size=1, activation="linear", name="Output"
+            filters=output_filters, kernel_size=1, activation="linear", name="Output"
         )
 
         # set up the up/downsampling
