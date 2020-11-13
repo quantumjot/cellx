@@ -12,7 +12,7 @@ class SkipConnection(Enum):
     ELEMENTWISE_ADD = K.layers.Add()
     ELEMENTWISE_MULTIPLY = K.layers.Multiply()
     CONCATENATE = K.layers.Concatenate(axis=-1)
-    NONE = lambda x: x[-1]
+    NONE = lambda x: x[0]
 
     def __call__(self, inputs):
         return self.value(inputs)
@@ -29,7 +29,6 @@ class UNet(K.Model):
     types to be specified:
         - elementwise_add
         - elementwise_multiply
-        - elementwise_subtract
         - concatenate
         - None (no bridge information, resembles an autoencoder)
 
@@ -46,9 +45,13 @@ class UNet(K.Model):
     Parameters
     ----------
     convolution : K.layers.Layer
+        A convolution layer.
     downsampling : K.layers.Layer
+        A downsampling layer.
     upsampling : K.layers.Layer
-    layers : list of ints
+        An upsampling layer.
+    layers : list of int
+        A list of filters for each layer.
     skip : str
         The skip connection type.
     outputs : int
@@ -78,8 +81,8 @@ class UNet(K.Model):
     def __init__(
         self,
         convolution: K.layers.Layer = ConvBlock2D,
-        downsampling: K.layers.Layer = K.layers.MaxPooling2D(pool_size=(2, 2)),
-        upsampling: K.layers.Layer = K.layers.UpSampling2D(size=(2, 2)),
+        downsampling: Optional[K.layers.Layer] = K.layers.MaxPooling2D,
+        upsampling: Optional[K.layers.Layer] = K.layers.UpSampling2D,
         layers: List[int] = [8, 16, 32],
         outputs: int = 1,
         skip: str = "concatenate",
@@ -89,18 +92,46 @@ class UNet(K.Model):
 
         super().__init__(name=name, **kwargs)
 
-        # convert the type here
+        # set the skip connection here
         if skip.upper() not in SkipConnection._member_names_:
             raise ValueError(f"Skip connection {skip} not recognized.")
-        self.skip = SkipConnection[skip.upper()]
+        self._skip = SkipConnection[skip.upper()]
 
-        self.convolution = convolution
-        self.downsampling = downsampling
-        self.upsampling = upsampling
+        # set up the convolutions
+        self._encoder = [
+            convolution(filters=k, name=f"Encoder{i}") for i, k in enumerate(layers)
+        ]
+        self._decoder = [
+            convolution(filters=k, name=f"Decoder{i}")
+            for i, k in enumerate(layers[:-1])
+        ]
+        self._decoder_output = convolution(
+            filters=outputs, kernel_size=1, activation="linear", name="Output"
+        )
 
-    def build(self, input_shape: tuple):
-        """Build the UNet"""
-        pass
+        # set up the up/downsampling
+        # TODO(arl): these may already be instantiated with custom params
+        # TODO(arl): if using a transpose convolution, we need to set the number of filters
+        self._downsampling = downsampling()
+        self._upsampling = upsampling()
 
     def call(self, x, training: Optional[bool] = None):
-        pass
+        # build the encoder arm
+        skips = []
+        for conv in self._encoder:
+            x = conv(x, training=training)
+            if conv != self._encoder[-1]:
+                skips.append(x)
+                x = self._downsampling(x)
+
+        # build the decoder arm using skips
+        x = self._upsampling(x)
+        for level, conv in list(enumerate(self._decoder))[::-1]:
+            x = self._skip([x, skips[level]])
+            x = conv(x, training=training)
+            if conv != self._decoder[0]:
+                x = self._upsampling(x)
+
+        # final convolution for output
+        x = self._decoder_output(x)
+        return x
