@@ -83,6 +83,7 @@ def parse_tfrecord(serialized_example):
 
     # get the image dimensions
     image_shape = [features[f"train/{dim}"] for dim in DIMENSIONS]
+    # image_shape = [64, 64, 2]
 
     return tf.cast(tf.reshape(image, image_shape), tf.float32)
 
