@@ -56,13 +56,16 @@ def write_dataset(
             writer.write(example.SerializeToString())
 
 
-def parse_tfrecord(serialized_example):
+def parse_tfrecord(serialized_example, output_shape: Optional[tuple] = None):
     """ Parse input images and return the one_hot label encoding.
 
     Parameters
     ----------
     serialized_example : tf.Tensor
         The serialized example to be parsed.
+    output_shape : tuple, None
+        Optional parameter to non-dynamically define output shape. If none, the
+        shape is determined from the dimensions stored in the TFRecord.
 
     Returns
     -------
@@ -82,13 +85,13 @@ def parse_tfrecord(serialized_example):
     image = tf.io.decode_raw(features["train/image"], tf.uint8)
 
     # get the image dimensions
-    image_shape = [features[f"train/{dim}"] for dim in DIMENSIONS]
-    # image_shape = [64, 64, 2]
+    if output_shape is None:
+        output_shape = [features[f"train/{dim}"] for dim in DIMENSIONS]
 
-    return tf.cast(tf.reshape(image, image_shape), tf.float32)
+    return tf.cast(tf.reshape(image, output_shape), tf.float32)
 
 
-def build_dataset(files: Union[List[str], str]):
+def build_dataset(files: Union[List[str], str], **kwargs):
     """Build a TF Dataset from a list of TFRecordFiles. Map the parser to it.
 
     Parameters
@@ -102,5 +105,5 @@ def build_dataset(files: Union[List[str], str]):
         The TF dataset.
     """
     dataset = tf.data.TFRecordDataset(files)
-    dataset = dataset.map(parse_tfrecord, num_parallel_calls=8)
+    dataset = dataset.map(lambda x: parse_tfrecord(x, **kwargs), num_parallel_calls=8)
     return dataset
