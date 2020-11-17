@@ -28,7 +28,7 @@ def write_dataset(
     filename : str
         The filename of the TFRecordFile.
     images : np.ndarray
-        An array of images of the format N(D)WHC.
+        An array of images of the format N(D)HWC.
     labels : np.ndarray, optional
         An array of labels.
     """
