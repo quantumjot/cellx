@@ -179,11 +179,11 @@ class Decoder3D(EncoderDecoderBase):
         super().__init__(convolution=convolution, sampling=sampling, **kwargs)
 
 
-class Sampling(K.layers.Layer):
+class RandomNormalSampler(K.layers.Layer):
     """Uses (z_mean, z_log_var) to sample z."""
 
-    def call(self, inputs):
-        z_mean, z_log_var = inputs
+    def call(self, x, training: Optional[bool] = None):
+        z_mean, z_log_var = x
         epsilon = K.backend.random_normal(shape=tf.shape(z_mean))
         return z_mean + tf.exp(0.5 * z_log_var) * epsilon
 

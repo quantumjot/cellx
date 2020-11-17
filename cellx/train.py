@@ -9,7 +9,7 @@ def compute_class_weight_dict(
 ) -> dict:
     """Compute class weight.
 
-    Wrapper for sklean function that returns Keras compatible dictionary.
+    Wrapper for sklearn function that returns Keras compatible dictionary.
 
     Parameters
     ----------
