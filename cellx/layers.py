@@ -163,7 +163,7 @@ class Encoder3D(EncoderDecoderBase):
 class Decoder2D(EncoderDecoderBase):
     """Decoder2D."""
 
-    def __init__(**kwargs):
+    def __init__(self, **kwargs):
         super().__init__(
             convolution=ConvBlock2D, sampling=K.layers.UpSampling2D, **kwargs
         )
