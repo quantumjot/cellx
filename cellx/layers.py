@@ -106,10 +106,9 @@ class EncoderDecoderBase(K.layers.Layer):
         convolution: K.layers.Layer = ConvBlock2D,
         sampling: Optional[K.layers.Layer] = K.layers.MaxPooling2D,
         layers: List[int] = [8, 16, 32],
-        name: str = "EncoderDecoderBase",
         **kwargs
     ):
-        super().__init__(name=name, **kwargs)
+        super().__init__(**kwargs)
 
         if sampling is not None:
             if not isinstance(sampling, K.layers.Layer):
@@ -146,37 +145,37 @@ class EncoderDecoderBase(K.layers.Layer):
 class Encoder2D(EncoderDecoderBase):
     """Encoder2D."""
 
-    def __init__(
-        self, convolution=ConvBlock2D, sampling=K.layers.MaxPooling2D, **kwargs
-    ):
-        super().__init__(convolution=convolution, sampling=sampling, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(
+            convolution=ConvBlock2D, sampling=K.layers.MaxPooling2D, **kwargs
+        )
 
 
 class Encoder3D(EncoderDecoderBase):
     """Encoder3D."""
 
-    def __init__(
-        self, convolution=ConvBlock3D, sampling=K.layers.MaxPooling3D, **kwargs
-    ):
-        super().__init__(convolution=convolution, sampling=sampling, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(
+            convolution=ConvBlock3D, sampling=K.layers.MaxPooling3D, **kwargs
+        )
 
 
 class Decoder2D(EncoderDecoderBase):
     """Decoder2D."""
 
-    def __init__(
-        self, convolution=ConvBlock2D, sampling=K.layers.UpSampling2D, **kwargs
-    ):
-        super().__init__(convolution=convolution, sampling=sampling, **kwargs)
+    def __init__(**kwargs):
+        super().__init__(
+            convolution=ConvBlock2D, sampling=K.layers.UpSampling2D, **kwargs
+        )
 
 
 class Decoder3D(EncoderDecoderBase):
     """Decoder3D."""
 
-    def __init__(
-        self, convolution=ConvBlock3D, sampling=K.layers.UpSampling3D, **kwargs
-    ):
-        super().__init__(convolution=convolution, sampling=sampling, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(
+            convolution=ConvBlock3D, sampling=K.layers.UpSampling3D, **kwargs
+        )
 
 
 class RandomNormalSampler(K.layers.Layer):
