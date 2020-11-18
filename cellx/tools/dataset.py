@@ -39,15 +39,22 @@ def write_dataset(
     assert images.dtype in (np.uint8, np.uint16,)
     assert images.ndim > 2 and images.ndim < 6
 
+    if labels is not None:
+        assert images.shape[0] == labels.shape[0]
+
     with tf.io.TFRecordWriter(filename) as writer:
 
-        for data in images:
+        for idx, data in enumerate(images):
             feature = {
                 "train/image": _bytes_feature(data.tostring()),
                 "train/width": _int64_feature(data.shape[1]),
                 "train/height": _int64_feature(data.shape[0]),
                 "train/channels": _int64_feature(data.shape[-1]),
             }
+
+            if labels is not None:
+                label = labels[idx]
+                feature.update({"train/label": _int64_feature(label)})
 
             features = tf.train.Features(feature=feature)
             example = tf.train.Example(features=features)
@@ -56,7 +63,12 @@ def write_dataset(
             writer.write(example.SerializeToString())
 
 
-def parse_tfrecord(serialized_example, output_shape: Optional[tuple] = None):
+def parse_tfrecord(
+    serialized_example,
+    output_shape: Optional[tuple] = None,
+    read_label: bool = False,
+    read_weights: bool = False,
+):
     """ Parse input images and return the one_hot label encoding.
 
     Parameters
@@ -66,6 +78,10 @@ def parse_tfrecord(serialized_example, output_shape: Optional[tuple] = None):
     output_shape : tuple, None
         Optional parameter to non-dynamically define output shape. If none, the
         shape is determined from the dimensions stored in the TFRecord.
+    read_label : bool
+        Read a label encoded in the file.
+    read_weights : bool
+        Read weights encoded in the example.
 
     Returns
     -------
@@ -73,22 +89,30 @@ def parse_tfrecord(serialized_example, output_shape: Optional[tuple] = None):
         The image as a tf.float32 tensor.
     """
 
-    feature = {"train/image": tf.io.FixedLenFeature([], tf.string)}
-    for dim in DIMENSIONS:
-        feature.update({f"train/{dim}": tf.io.FixedLenFeature([], tf.int64)})
+    feature = {
+        f"train/{dim}": tf.io.FixedLenFeature([], tf.int64) for dim in DIMENSIONS
+    }
+    feature.update({"train/image": tf.io.FixedLenFeature([], tf.string)})
+    feature.update({"train/label": tf.io.FixedLenFeature([], tf.int64)})
 
     features = tf.io.parse_single_example(
         serialized=serialized_example, features=feature
     )
 
     # convert the image data from string back to the numbers
-    image = tf.io.decode_raw(features["train/image"], tf.uint8)
+    image_raw = tf.io.decode_raw(features["train/image"], tf.uint8)
 
     # get the image dimensions
     if output_shape is None:
         output_shape = [features[f"train/{dim}"] for dim in DIMENSIONS]
 
-    return tf.cast(tf.reshape(image, output_shape), tf.float32)
+    image = tf.cast(tf.reshape(image_raw, output_shape), tf.float32)
+
+    if read_label:
+        label = features["train/label"]
+        return image, label
+    else:
+        return image
 
 
 def build_dataset(files: Union[List[str], str], **kwargs):
