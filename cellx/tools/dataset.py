@@ -3,7 +3,8 @@ from typing import List, Optional, Union
 import numpy as np
 import tensorflow as tf
 
-DIMENSIONS = ["width", "height", "channels"]
+# TODO(arl): allow depth for volumetric data
+DIMENSIONS = ["height", "width", "channels"]
 
 
 def _int64_feature(value):
