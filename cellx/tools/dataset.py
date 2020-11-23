@@ -94,7 +94,9 @@ def parse_tfrecord(
         f"train/{dim}": tf.io.FixedLenFeature([], tf.int64) for dim in DIMENSIONS
     }
     feature.update({"train/image": tf.io.FixedLenFeature([], tf.string)})
-    feature.update({"train/label": tf.io.FixedLenFeature([], tf.int64)})
+
+    if read_label:
+        feature.update({"train/label": tf.io.FixedLenFeature([], tf.int64)})
 
     features = tf.io.parse_single_example(
         serialized=serialized_example, features=feature
