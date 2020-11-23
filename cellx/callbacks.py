@@ -132,9 +132,17 @@ def _plot_to_image(figure):
 def _plot_montage(x, max_images: int = 32, columns: int = 8, rows: int = 4):
     """ make a montage of the images """
 
+    # if the prediction returns a tuple, assume the first one is the image
+    if isinstance(x, tuple):
+        x = x[0]
+
     x = x[:max_images, ...]
 
-    rgb = tf.stack([x[..., 1], x[..., 0], x[..., 1]], axis=-1)
+    # deal with 2-color images by converting to RGB
+    if x.shape[-1] == 2:
+        rgb = tf.stack([x[..., 1], x[..., 0], x[..., 1]], axis=-1)
+    else:
+        rgb = x
 
     rgb = tf.pad(
         tensor=rgb,
