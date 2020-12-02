@@ -160,6 +160,14 @@ class Encoder3D(EncoderDecoderBase):
         )
 
 
+class Encoder3DFlat(EncoderDecoderBase):
+    """Encoder3DFlat."""
+
+    def __init__(self, **kwargs):
+        sampling = K.layers.MaxPooling3D(pool_size=(2, 2, 1))
+        super().__init__(convolution=ConvBlock3D, sampling=sampling, **kwargs)
+
+
 class Decoder2D(EncoderDecoderBase):
     """Decoder2D."""
 
