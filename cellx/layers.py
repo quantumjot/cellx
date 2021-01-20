@@ -34,14 +34,10 @@ class ConvBlockBase(K.layers.Layer):
         padding: str = "same",
         strides: int = 1,
         activation: str = "swish",
-        name: str = "ConvBlock",
         **kwargs
     ):
-        super().__init__(name=name)
-
-        self.conv = convolution(
-            filters, kernel_size, strides=strides, padding=padding, **kwargs,
-        )
+        super().__init__(**kwargs)
+        self.conv = convolution(filters, kernel_size, strides=strides, padding=padding,)
         self.norm = K.layers.BatchNormalization()
         self.activation = K.layers.Activation(activation)
 
@@ -70,15 +66,19 @@ class ConvBlockBase(K.layers.Layer):
 class ConvBlock2D(ConvBlockBase):
     """ConvBlock2D."""
 
-    def __init__(self, **kwargs):
-        super().__init__(convolution=K.layers.Conv2D, **kwargs)
+    def __init__(self, convolution=K.layers.Conv2D, **kwargs):
+        extra_kwargs = {"convolution": convolution}
+        kwargs.update(extra_kwargs)
+        super().__init__(**kwargs)
 
 
 class ConvBlock3D(ConvBlockBase):
     """ConvBlock3D."""
 
-    def __init__(self, **kwargs):
-        super().__init__(convolution=K.layers.Conv3D, **kwargs)
+    def __init__(self, convolution=K.layers.Conv3D, **kwargs):
+        extra_kwargs = {"convolution": convolution}
+        kwargs.update(extra_kwargs)
+        super().__init__(**kwargs)
 
 
 class EncoderDecoderBase(K.layers.Layer):
@@ -124,7 +124,6 @@ class EncoderDecoderBase(K.layers.Layer):
         self.layers = [convolution(filters=k, strides=strides) for k in layers]
 
         self._config = {
-            "sampling": self.sampling,
             "layers": layers,
         }
         self._config.update(kwargs)
@@ -145,45 +144,59 @@ class EncoderDecoderBase(K.layers.Layer):
 class Encoder2D(EncoderDecoderBase):
     """Encoder2D."""
 
-    def __init__(self, **kwargs):
-        super().__init__(
-            convolution=ConvBlock2D, sampling=K.layers.MaxPooling2D, **kwargs
-        )
+    def __init__(
+        self, convolution=ConvBlock2D, sampling=K.layers.MaxPooling2D, **kwargs
+    ):
+        extra_kwargs = {"convolution": convolution, "sampling": sampling}
+        kwargs.update(extra_kwargs)
+        super().__init__(**kwargs)
 
 
 class Encoder3D(EncoderDecoderBase):
     """Encoder3D."""
 
-    def __init__(self, **kwargs):
-        super().__init__(
-            convolution=ConvBlock3D, sampling=K.layers.MaxPooling3D, **kwargs
-        )
+    def __init__(
+        self, convolution=ConvBlock3D, sampling=K.layers.MaxPooling3D, **kwargs
+    ):
+        extra_kwargs = {"convolution": convolution, "sampling": sampling}
+        kwargs.update(extra_kwargs)
+        super().__init__(**kwargs)
 
 
 class Encoder3DFlat(EncoderDecoderBase):
     """Encoder3DFlat."""
 
-    def __init__(self, **kwargs):
-        sampling = K.layers.MaxPooling3D(pool_size=(2, 2, 1))
-        super().__init__(convolution=ConvBlock3D, sampling=sampling, **kwargs)
+    def __init__(
+        self,
+        convolution=ConvBlock3D,
+        sampling=K.layers.MaxPooling3D(pool_size=(2, 2, 1)),
+        **kwargs
+    ):
+        extra_kwargs = {"convolution": convolution, "sampling": sampling}
+        kwargs.update(extra_kwargs)
+        super().__init__(**kwargs)
 
 
 class Decoder2D(EncoderDecoderBase):
     """Decoder2D."""
 
-    def __init__(self, **kwargs):
-        super().__init__(
-            convolution=ConvBlock2D, sampling=K.layers.UpSampling2D, **kwargs
-        )
+    def __init__(
+        self, convolution=ConvBlock2D, sampling=K.layers.UpSampling2D, **kwargs
+    ):
+        extra_kwargs = {"convolution": convolution, "sampling": sampling}
+        kwargs.update(extra_kwargs)
+        super().__init__(**kwargs)
 
 
 class Decoder3D(EncoderDecoderBase):
     """Decoder3D."""
 
-    def __init__(self, **kwargs):
-        super().__init__(
-            convolution=ConvBlock3D, sampling=K.layers.UpSampling3D, **kwargs
-        )
+    def __init__(
+        self, convolution=ConvBlock3D, sampling=K.layers.UpSampling3D, **kwargs
+    ):
+        extra_kwargs = {"convolution": convolution, "sampling": sampling}
+        kwargs.update(extra_kwargs)
+        super().__init__(**kwargs)
 
 
 class RandomNormalSampler(K.layers.Layer):

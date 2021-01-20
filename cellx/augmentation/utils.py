@@ -38,6 +38,7 @@ def append_conditional_augmentation(
     dataset : tf.data.Dataset
         The augmented dataset.
     """
+
     for augmentation in augmentations:
         dataset = dataset.map(
             lambda *x: tf.cond(
