@@ -81,6 +81,9 @@ class ManifoldProjection2D:
         imgrid : np.ndarray
             An image with example image patches from the manifold arranged on a
             grid.
+        counts : np.ndarray
+            A 2d histogram of the number of image patches per bin. Note that
+            this is on a different scale to the imgrid.
         extent : tuple
             Delimits the minimum and maximum bin edges, in each dimension, used
             to create the result.
@@ -89,7 +92,7 @@ class ManifoldProjection2D:
         assert manifold.shape[0] == len(self._images)
 
         # bin the manifold
-        s, xe, ye, bn = binned_statistic_2d(
+        counts, xe, ye, bn = binned_statistic_2d(
             manifold[:, components[0]],
             manifold[:, components[1]],
             [],
@@ -133,12 +136,12 @@ class ManifoldProjection2D:
             xx, yy = xy
             blockx = slice(
                 xx * full_bins[0] - half_bins[0],
-                (xx + 1) * full_bins[0] - half_bins[0],
+                xx * full_bins[0] - half_bins[0] + self._output_shape[0],
                 1,
             )
             blocky = slice(
                 yy * full_bins[1] - half_bins[1],
-                (yy + 1) * full_bins[1] - half_bins[1],
+                yy * full_bins[1] - half_bins[1] + self._output_shape[1],
                 1,
             )
 
@@ -146,7 +149,7 @@ class ManifoldProjection2D:
 
         extent = (min(xe), max(xe), min(ye), max(ye))
 
-        return imgrid, extent
+        return imgrid, counts, extent
 
 
 if __name__ == "__main__":
