@@ -1,6 +1,8 @@
+import enum
 import hashlib
 import json
 import os
+import zipfile
 
 import numpy as np
 from skimage import io
@@ -176,3 +178,86 @@ class EncodingReader:
         stack = np.rollaxis(stack, 1, 4)
 
         return stack, metadata
+
+
+def read_annotations(path: str):
+    """Read annotations.
+
+    This provides a capability to load the contents of a single, or multiple
+    annotation files, aggregating their contents and returning a dictionary of
+    state labels.
+
+    Parameters
+    ----------
+    path : str
+        The path to the folder containing the annotation.zip files
+
+    Returns
+    -------
+    images : list
+        A list of N image patches of the format (Z),Y,X,C
+    labels : list
+        A list of numeric image labels of length (N, )
+    states : dict
+        A dictionary mapping a string label to the numeric image label
+
+
+    Notes
+    -----
+    Should this raise a warning if the image patches are of different dimensions?
+    """
+
+    images = []
+    labels = []
+    states = {}
+
+    # find the zip files:
+    zipfiles = [
+        os.path.join(path, filename)
+        for filename in os.listdir(path)
+        if filename.endswith(".zip") and filename.startswith("annotation_")
+    ]
+
+    if not zipfiles:
+        raise IOError("Warning, no 'annotation' zip files found.")
+
+    # iterate over the zip files and aggregate the data
+    for zip_fn in zipfiles:
+
+        with zipfile.ZipFile(zip_fn, "r") as zip_data:
+            files = zip_data.namelist()
+
+            # first open the annotation file
+            json_fn = [f for f in files if f.endswith(".json")][0]
+            with zip_data.open(json_fn) as js:
+                json_data = json.load(js)
+                _states = json_data["states"]
+
+                # if we have no states defined, use the serialized states to
+                # define them
+                if not states:
+                    states = _states
+                    States = enum.Enum("States", states)
+
+                # if they do exist, make sure that they match all other files
+                if states != _states:
+                    raise Exception("Annotation files are incompatible")
+
+            # now iterate over examples of each label type
+            for state in States:
+                numeric_label = state.value
+                label = state.name
+
+                raw_images = [
+                    io.imread(zip_data.open(filename))
+                    for filename in files
+                    if filename.endswith(".tif") and filename.startswith(label)
+                ]
+
+                images += raw_images
+                labels += [numeric_label] * len(raw_images)
+
+    # sanity check that we have the same number of labels and images
+    assert len(images) == len(labels), "Number of labels and images are different"
+
+    return images, labels, states
