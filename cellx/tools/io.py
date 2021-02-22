@@ -181,7 +181,7 @@ class EncodingReader:
         return stack, metadata
 
 
-def read_annotations(path: str):
+def read_annotations(path: str, use_flagged: bool = False):
     """Read annotations.
 
     This provides a capability to load the contents of a single, or multiple
@@ -192,6 +192,8 @@ def read_annotations(path: str):
     ----------
     path : str
         The path to the folder containing the annotation.zip files
+    use_flagged : bool
+        Use images that have been flagged. Default is False
 
     Returns
     -------
@@ -207,6 +209,11 @@ def read_annotations(path: str):
     -----
     Should this raise a warning if the image patches are of different dimensions?
     """
+
+    def _test_flagged(_filename: str) -> bool:
+        """Return whether to use this file"""
+        is_flagged = os.path.splitext(_filename)[0].endswith("flagged")
+        return not (not use_flagged and is_flagged)
 
     images = []
     labels = []
@@ -252,7 +259,9 @@ def read_annotations(path: str):
                 raw_images = [
                     imageio.imread(zip_data.open(filename).read())
                     for filename in files
-                    if filename.endswith(".tif") and filename.startswith(label)
+                    if filename.endswith(".tif")
+                    and filename.startswith(label)
+                    and _test_flagged(filename)
                 ]
 
                 images += raw_images
