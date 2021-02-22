@@ -4,6 +4,7 @@ import json
 import os
 import zipfile
 
+import imageio
 import numpy as np
 from skimage import io
 
@@ -249,7 +250,7 @@ def read_annotations(path: str):
                 label = state.name
 
                 raw_images = [
-                    io.imread(zip_data.open(filename))
+                    imageio.imread(zip_data.open(filename).read())
                     for filename in files
                     if filename.endswith(".tif") and filename.startswith(label)
                 ]
