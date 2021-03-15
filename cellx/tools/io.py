@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import zipfile
+from typing import Union
 
 import imageio
 import numpy as np
@@ -181,7 +182,7 @@ class EncodingReader:
         return stack, metadata
 
 
-def read_annotations(path: str, use_flagged: bool = False):
+def read_annotations(path: Union[str, list], use_flagged: bool = False):
     """Read annotations.
 
     This provides a capability to load the contents of a single, or multiple
@@ -190,8 +191,9 @@ def read_annotations(path: str, use_flagged: bool = False):
 
     Parameters
     ----------
-    path : str
-        The path to the folder containing the annotation.zip files
+    path : str or list
+        str     -> The path to the folder containing the annotation.zip files.
+        list    -> The list of path(s) to the specific annotation.zip file(s).
     use_flagged : bool
         Use images that have been flagged. Default is False
 
@@ -220,11 +222,27 @@ def read_annotations(path: str, use_flagged: bool = False):
     states = {}
 
     # find the zip files:
-    zipfiles = [
-        os.path.join(path, filename)
-        for filename in os.listdir(path)
-        if filename.endswith(".zip") and filename.startswith("annotation_")
-    ]
+    if not isinstance(path, (str, list)):
+        raise IOError(
+            f"Warning, specify correct path format (str or list), not {type(path)}"
+        )
+
+    if isinstance(path, str):
+        zipfiles = [
+            os.path.join(path, filename)
+            for filename in os.listdir(path)
+            if filename.endswith(".zip") and filename.startswith("annotation_")
+        ]
+
+    if isinstance(path, list):
+        zipfiles = [
+            filename
+            for filename in path
+            if filename.split("/")[-1]
+            in os.listdir(("/").join(filename.split("/")[:-1]))
+            and filename.split("/")[-1].startswith("annotation_")
+            and filename.endswith(".zip")
+        ]
 
     if not zipfiles:
         raise IOError("Warning, no 'annotation' zip files found.")
