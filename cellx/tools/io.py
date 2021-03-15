@@ -3,7 +3,7 @@ import hashlib
 import json
 import os
 import zipfile
-from typing import Union
+from typing import List, Union
 
 import imageio
 import numpy as np
@@ -182,7 +182,7 @@ class EncodingReader:
         return stack, metadata
 
 
-def read_annotations(path: Union[str, list], use_flagged: bool = False):
+def read_annotations(path: Union[str, List[str]], use_flagged: bool = False):
     """Read annotations.
 
     This provides a capability to load the contents of a single, or multiple
