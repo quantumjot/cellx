@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 import zipfile
+from typing import List, Union
 
 import imageio
 import numpy as np
@@ -181,7 +182,7 @@ class EncodingReader:
         return stack, metadata
 
 
-def read_annotations(path: str, use_flagged: bool = False):
+def read_annotations(path: Union[str, List[str]], use_flagged: bool = False):
     """Read annotations.
 
     This provides a capability to load the contents of a single, or multiple
@@ -190,8 +191,9 @@ def read_annotations(path: str, use_flagged: bool = False):
 
     Parameters
     ----------
-    path : str
-        The path to the folder containing the annotation.zip files
+    path : str or list
+        str     -> The path to the folder containing the annotation.zip files.
+        list    -> The list of path(s) to the specific annotation.zip file(s).
     use_flagged : bool
         Use images that have been flagged. Default is False
 
@@ -220,17 +222,37 @@ def read_annotations(path: str, use_flagged: bool = False):
     states = {}
 
     # find the zip files:
-    zipfiles = [
-        os.path.join(path, filename)
-        for filename in os.listdir(path)
-        if filename.endswith(".zip") and filename.startswith("annotation_")
-    ]
+    if not isinstance(path, (str, list)):
+        raise IOError(
+            f"Warning, specify correct path format (str or list), not {type(path)}"
+        )
+
+    if isinstance(path, str):
+        zipfiles = [
+            os.path.join(path, filename)
+            for filename in os.listdir(path)
+            if filename.endswith(".zip") and filename.startswith("annotation_")
+        ]
+
+    if isinstance(path, list):
+        zipfiles = path
 
     if not zipfiles:
         raise IOError("Warning, no 'annotation' zip files found.")
 
     # iterate over the zip files and aggregate the data
     for zip_fn in zipfiles:
+
+        # check whether file is in the directory:
+        zip_path, zip_file = os.path.split(zip_fn)
+        if zip_file not in os.listdir(zip_path):
+            print(f"No '{zip_file}' in the directory: '{zip_path}'")
+            continue
+
+        # check whether file in the correct format;
+        if not zip_file.startswith("annotation_") and zip_file.endswith(".zip"):
+            print(f"Zip file in incorrect format: '{zip_file}'")
+            continue
 
         with zipfile.ZipFile(zip_fn, "r") as zip_data:
             files = zip_data.namelist()
