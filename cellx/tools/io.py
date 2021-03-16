@@ -235,20 +235,24 @@ def read_annotations(path: Union[str, List[str]], use_flagged: bool = False):
         ]
 
     if isinstance(path, list):
-        zipfiles = [
-            filename
-            for filename in path
-            if filename.split("/")[-1]
-            in os.listdir(("/").join(filename.split("/")[:-1]))
-            and filename.split("/")[-1].startswith("annotation_")
-            and filename.endswith(".zip")
-        ]
+        zipfiles = path
 
     if not zipfiles:
         raise IOError("Warning, no 'annotation' zip files found.")
 
     # iterate over the zip files and aggregate the data
     for zip_fn in zipfiles:
+
+        # check whether file is in the directory:
+        zip_path, zip_file = os.path.split(zip_fn)
+        if zip_file not in os.listdir(zip_path):
+            print(f"No '{zip_file}' in the directory: '{zip_path}'")
+            continue
+
+        # check whether file in the correct format;
+        if not zip_file.startswith("annotation_") and zip_file.endswith(".zip"):
+            print(f"Zip file in incorrect format: '{zip_file}'")
+            continue
 
         with zipfile.ZipFile(zip_fn, "r") as zip_data:
             files = zip_data.namelist()
