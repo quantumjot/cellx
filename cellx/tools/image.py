@@ -130,21 +130,17 @@ class InfinitePaddedImage:
             padded_im = np.ones(tuple([(s.stop - s.start) for s in coords]))
             return float(self.pad_value) * padded_im.astype(self.data.dtype)
 
-        # OK, now for the complicated stuff, we need a transfer function to
-        # convert coords into some reflected form of the image
-        mesh_x, mesh_y = np.meshgrid(
-            *[np.arange(s.start, s.stop) for s in coords[0:2]], indexing="ij"
+        meshes = np.meshgrid(
+            *[np.arange(s.start, s.stop) for s in coords], indexing="ij"
         )
 
         # use the X and y coords to determine the direction of the flips and
         # the position into the original data
-        x_dir = -2 * np.mod(mesh_x // self.shape[0], 2) + 1.0  # convert to +1/-1
-        y_dir = -2 * np.mod(mesh_y // self.shape[1], 2) + 1.0
-        x_offset = np.mod(mesh_x * x_dir, self.shape[0])
-        y_offset = np.mod(mesh_y * y_dir, self.shape[1])
+        idx = []
+        for dim, mesh in enumerate(meshes):
+            dir = -2 * np.mod(mesh // self.shape[dim], 2) + 1.0  # convert to +1/-1
+            offset = np.mod(mesh * dir, self.shape[dim])
+            indices = offset.astype(np.int)
+            idx.append(indices)
 
-        x_ind = x_offset.astype(np.uint)
-        y_ind = y_offset.astype(np.uint)
-
-        # make the image by reslicing the original data
-        return self.data[x_ind, y_ind, ...]
+        return self.data[tuple(idx)]
