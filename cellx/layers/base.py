@@ -2,8 +2,6 @@ from typing import List, Optional, Union
 
 from tensorflow import keras as K
 
-from .convolution import ConvBlock2D
-
 
 class ConvBlockBase(K.layers.Layer):
     """Base class for convolutional blocks.
@@ -86,7 +84,7 @@ class EncoderDecoderBase(K.layers.Layer):
 
     def __init__(
         self,
-        convolution: K.layers.Layer = ConvBlock2D,
+        convolution: K.layers.Layer = None,
         sampling: Optional[K.layers.Layer] = K.layers.MaxPooling2D,
         layers: List[int] = [8, 16, 32],
         **kwargs
