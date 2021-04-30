@@ -1,7 +1,8 @@
 from typing import List, Optional, Union
 
-import tensorflow as tf
 from tensorflow import keras as K
+
+from .convolution import ConvBlock2D
 
 
 class ConvBlockBase(K.layers.Layer):
@@ -61,24 +62,6 @@ class ConvBlockBase(K.layers.Layer):
         config = super().get_config()
         config.update(self._config)
         return config
-
-
-class ConvBlock2D(ConvBlockBase):
-    """ConvBlock2D."""
-
-    def __init__(self, convolution=K.layers.Conv2D, **kwargs):
-        extra_kwargs = {"convolution": convolution}
-        kwargs.update(extra_kwargs)
-        super().__init__(**kwargs)
-
-
-class ConvBlock3D(ConvBlockBase):
-    """ConvBlock3D."""
-
-    def __init__(self, convolution=K.layers.Conv3D, **kwargs):
-        extra_kwargs = {"convolution": convolution}
-        kwargs.update(extra_kwargs)
-        super().__init__(**kwargs)
 
 
 class EncoderDecoderBase(K.layers.Layer):
@@ -141,73 +124,12 @@ class EncoderDecoderBase(K.layers.Layer):
         return config
 
 
-class Encoder2D(EncoderDecoderBase):
-    """Encoder2D."""
+class ResidualBlockBase(K.layers.Layer):
+    """Base class for residual blocks. """
 
-    def __init__(
-        self, convolution=ConvBlock2D, sampling=K.layers.MaxPooling2D, **kwargs
-    ):
-        extra_kwargs = {"convolution": convolution, "sampling": sampling}
-        kwargs.update(extra_kwargs)
-        super().__init__(**kwargs)
-
-
-class Encoder3D(EncoderDecoderBase):
-    """Encoder3D."""
-
-    def __init__(
-        self, convolution=ConvBlock3D, sampling=K.layers.MaxPooling3D, **kwargs
-    ):
-        extra_kwargs = {"convolution": convolution, "sampling": sampling}
-        kwargs.update(extra_kwargs)
-        super().__init__(**kwargs)
-
-
-class Encoder3DFlat(EncoderDecoderBase):
-    """Encoder3DFlat."""
-
-    def __init__(
-        self,
-        convolution=ConvBlock3D,
-        sampling=K.layers.MaxPooling3D(pool_size=(2, 2, 1)),
-        **kwargs
-    ):
-        extra_kwargs = {"convolution": convolution, "sampling": sampling}
-        kwargs.update(extra_kwargs)
-        super().__init__(**kwargs)
-
-
-class Decoder2D(EncoderDecoderBase):
-    """Decoder2D."""
-
-    def __init__(
-        self, convolution=ConvBlock2D, sampling=K.layers.UpSampling2D, **kwargs
-    ):
-        extra_kwargs = {"convolution": convolution, "sampling": sampling}
-        kwargs.update(extra_kwargs)
-        super().__init__(**kwargs)
-
-
-class Decoder3D(EncoderDecoderBase):
-    """Decoder3D."""
-
-    def __init__(
-        self, convolution=ConvBlock3D, sampling=K.layers.UpSampling3D, **kwargs
-    ):
-        extra_kwargs = {"convolution": convolution, "sampling": sampling}
-        kwargs.update(extra_kwargs)
-        super().__init__(**kwargs)
-
-
-class RandomNormalSampler(K.layers.Layer):
-    """Uses (z_mean, z_log_var) to sample z."""
-
-    def call(self, x, training: Optional[bool] = None):
-        z_mean, z_log_var = x
-        epsilon = K.backend.random_normal(shape=tf.shape(z_mean))
-        return z_mean + tf.exp(0.5 * z_log_var) * epsilon
+    def __init__(self):
+        pass
 
 
 if __name__ == "__main__":
-    # boilerplate
     pass
