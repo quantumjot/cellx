@@ -1,6 +1,6 @@
 from tensorflow import keras as K
 
-from .base import ConvBlockBase, EncoderDecoderBase
+from .base import ConvBlockBase, EncoderDecoderBase, ResidualBlockBase
 
 
 class ConvBlock2D(ConvBlockBase):
@@ -16,6 +16,15 @@ class ConvBlock3D(ConvBlockBase):
     """ConvBlock3D."""
 
     def __init__(self, convolution=K.layers.Conv3D, **kwargs):
+        extra_kwargs = {"convolution": convolution}
+        kwargs.update(extra_kwargs)
+        super().__init__(**kwargs)
+
+
+class ResidualBlock2D(ResidualBlockBase):
+    """ResidualBlock2D."""
+
+    def __init__(self, convolution=K.layers.Conv2D, **kwargs):
         extra_kwargs = {"convolution": convolution}
         kwargs.update(extra_kwargs)
         super().__init__(**kwargs)

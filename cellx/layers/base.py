@@ -23,6 +23,11 @@ class ConvBlockBase(K.layers.Layer):
         Name of activation function.
     strides : int
         Stride of the convolution.
+
+
+    Notes
+    -----
+    * The convolution does not use bias immediately before the batch norm
     """
 
     def __init__(
@@ -36,7 +41,9 @@ class ConvBlockBase(K.layers.Layer):
         **kwargs
     ):
         super().__init__(**kwargs)
-        self.conv = convolution(filters, kernel_size, strides=strides, padding=padding,)
+        self.conv = convolution(
+            filters, kernel_size, strides=strides, padding=padding, use_bias=False,
+        )
         self.norm = K.layers.BatchNormalization()
         self.activation = K.layers.Activation(activation)
 
@@ -123,10 +130,68 @@ class EncoderDecoderBase(K.layers.Layer):
 
 
 class ResidualBlockBase(K.layers.Layer):
-    """Base class for residual blocks. """
+    """Base class for residual blocks.
 
-    def __init__(self):
-        pass
+    Keras layer to perform a convolution with batch normalization followed
+    by activation.
+
+    Parameters
+    ----------
+    convolution : keras.layers.Conv
+        A convolutional layer for 2 or 3-dimensions.
+    filters : int
+        The number of convolutional filters.
+    kernel_size : int, tuple
+        Size of the convolutional kernel.
+    padding : str
+        Padding type for convolution.
+    activation : str
+        Name of activation function.
+    strides : int
+        Stride of the convolution.
+    indentity_skip : bool, default = False
+        Use an identity projection for the skip
+
+    """
+
+    def __init__(
+        self,
+        convolution: K.layers.Layer = K.layers.Conv2D,
+        filters: int = 32,
+        kernel_size: Union[int, tuple] = 3,
+        padding: str = "same",
+        strides: int = 1,
+        activation: str = "swish",
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+
+        self.conv = convolution(
+            filters, kernel_size, strides=strides, padding=padding, use_bias=False,
+        )
+        self.norm = K.layers.BatchNormalization()
+        self.activation = K.layers.Activation(activation)
+
+        # store the config so that we can restore it later
+        self._config = {
+            "filters": filters,
+            "kernel_size": kernel_size,
+            "padding": padding,
+            "strides": strides,
+            "activation": activation,
+        }
+        self._config.update(kwargs)
+
+    def call(self, x, training: Optional[bool] = None):
+        """Return the result of the normalized convolution."""
+        conv = self.conv(x)
+        conv = self.norm(conv, training=training)
+        return self.activation(conv)
+
+    def get_config(self) -> dict:
+        config = super().get_config()
+        config.update(self._config)
+        return config
 
 
 if __name__ == "__main__":
