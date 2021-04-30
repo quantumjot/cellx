@@ -152,6 +152,10 @@ class ResidualBlockBase(K.layers.Layer):
     indentity_skip : bool, default = False
         Use an identity projection for the skip
 
+    Notes
+    -----
+    * The convolution does not use bias immediately before the batch norm
+
     """
 
     def __init__(
@@ -162,15 +166,32 @@ class ResidualBlockBase(K.layers.Layer):
         padding: str = "same",
         strides: int = 1,
         activation: str = "swish",
+        indentity_skip: bool = False,
         **kwargs
     ):
         super().__init__(**kwargs)
 
-        self.conv = convolution(
+        # convolutional layers
+        self.conv_1 = convolution(
             filters, kernel_size, strides=strides, padding=padding, use_bias=False,
         )
-        self.norm = K.layers.BatchNormalization()
+        self.conv_2 = convolution(
+            filters, kernel_size, strides=1, padding=padding, use_bias=False,
+        )
+        self.conv_identity = convolution(
+            filters, kernel_size=1, strides=strides, padding=padding, use_bias=False,
+        )
+
+        # batch normalization
+        self.norm_1 = K.layers.BatchNormalization()
+        self.norm_2 = K.layers.BatchNormalization()
+        self.norm_identity = K.layers.BatchNormalization()
+
+        # activation function
         self.activation = K.layers.Activation(activation)
+
+        # identity skip
+        self.indentity_skip = indentity_skip or strides != 1
 
         # store the config so that we can restore it later
         self._config = {
@@ -179,14 +200,32 @@ class ResidualBlockBase(K.layers.Layer):
             "padding": padding,
             "strides": strides,
             "activation": activation,
+            "indentity_skip": indentity_skip,
         }
         self._config.update(kwargs)
 
     def call(self, x, training: Optional[bool] = None):
-        """Return the result of the normalized convolution."""
-        conv = self.conv(x)
+        """Return the result of the residual block convolution."""
+
+        # store the incoming skip
+        skip = x
+
+        conv = self.conv_1(x)
         conv = self.norm(conv, training=training)
-        return self.activation(conv)
+        conv = self.activation(conv)
+
+        conv = self.conv_2(conv)
+        conv = self.norm(conv, training=training)
+
+        # skip here if we have different strides or different number of filters
+        if self.indentity_skip:
+            skip = self.conv_identity(skip)
+            skip = self.norm_identity(skip)
+
+        conv = K.layers.Add()([skip, conv])
+        conv = self.activation(conv)
+
+        return conv
 
     def get_config(self) -> dict:
         config = super().get_config()
