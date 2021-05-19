@@ -1,9 +1,9 @@
 from tensorflow import keras as K
 
-from .base import ConvBlockBase, EncoderDecoderBase, ResidualBlockBase
+from . import base
 
 
-class ConvBlock2D(ConvBlockBase):
+class ConvBlock2D(base.ConvBlockBase):
     """ConvBlock2D."""
 
     def __init__(self, convolution=K.layers.Conv2D, **kwargs):
@@ -12,7 +12,7 @@ class ConvBlock2D(ConvBlockBase):
         super().__init__(**kwargs)
 
 
-class ConvBlock3D(ConvBlockBase):
+class ConvBlock3D(base.ConvBlockBase):
     """ConvBlock3D."""
 
     def __init__(self, convolution=K.layers.Conv3D, **kwargs):
@@ -21,7 +21,7 @@ class ConvBlock3D(ConvBlockBase):
         super().__init__(**kwargs)
 
 
-class ResidualBlock2D(ResidualBlockBase):
+class ResidualBlock2D(base.ResidualBlockBase):
     """ResidualBlock2D."""
 
     def __init__(self, convolution=K.layers.Conv2D, **kwargs):
@@ -30,7 +30,7 @@ class ResidualBlock2D(ResidualBlockBase):
         super().__init__(**kwargs)
 
 
-class Encoder2D(EncoderDecoderBase):
+class Encoder2D(base.EncoderDecoderBase):
     """Encoder2D."""
 
     def __init__(
@@ -41,7 +41,7 @@ class Encoder2D(EncoderDecoderBase):
         super().__init__(**kwargs)
 
 
-class Encoder3D(EncoderDecoderBase):
+class Encoder3D(base.EncoderDecoderBase):
     """Encoder3D."""
 
     def __init__(
@@ -52,7 +52,7 @@ class Encoder3D(EncoderDecoderBase):
         super().__init__(**kwargs)
 
 
-class Encoder3DFlat(EncoderDecoderBase):
+class Encoder3DFlat(base.EncoderDecoderBase):
     """Encoder3DFlat."""
 
     def __init__(
@@ -66,7 +66,7 @@ class Encoder3DFlat(EncoderDecoderBase):
         super().__init__(**kwargs)
 
 
-class Decoder2D(EncoderDecoderBase):
+class Decoder2D(base.EncoderDecoderBase):
     """Decoder2D."""
 
     def __init__(
@@ -77,7 +77,7 @@ class Decoder2D(EncoderDecoderBase):
         super().__init__(**kwargs)
 
 
-class Decoder3D(EncoderDecoderBase):
+class Decoder3D(base.EncoderDecoderBase):
     """Decoder3D."""
 
     def __init__(

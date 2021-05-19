@@ -149,7 +149,7 @@ class ResidualBlockBase(K.layers.Layer):
         Name of activation function.
     strides : int
         Stride of the convolution.
-    indentity_skip : bool, default = False
+    identity_skip : bool, default = False
         Use an identity projection for the skip
 
     Notes
@@ -166,7 +166,7 @@ class ResidualBlockBase(K.layers.Layer):
         padding: str = "same",
         strides: int = 1,
         activation: str = "swish",
-        indentity_skip: bool = False,
+        identity_skip: bool = False,
         **kwargs
     ):
         super().__init__(**kwargs)
@@ -188,10 +188,11 @@ class ResidualBlockBase(K.layers.Layer):
         self.norm_identity = K.layers.BatchNormalization()
 
         # activation function
-        self.activation = K.layers.Activation(activation)
+        self.activation_1 = K.layers.Activation(activation)
+        self.activation_2 = K.layers.Activation(activation)
 
         # identity skip
-        self.indentity_skip = indentity_skip or strides != 1
+        self.identity_skip = identity_skip or strides != 1
 
         # store the config so that we can restore it later
         self._config = {
@@ -200,7 +201,7 @@ class ResidualBlockBase(K.layers.Layer):
             "padding": padding,
             "strides": strides,
             "activation": activation,
-            "indentity_skip": indentity_skip,
+            "identity_skip": identity_skip,
         }
         self._config.update(kwargs)
 
@@ -211,19 +212,19 @@ class ResidualBlockBase(K.layers.Layer):
         skip = x
 
         conv = self.conv_1(x)
-        conv = self.norm(conv, training=training)
-        conv = self.activation(conv)
+        conv = self.norm_1(conv, training=training)
+        conv = self.activation_1(conv)
 
         conv = self.conv_2(conv)
-        conv = self.norm(conv, training=training)
+        conv = self.norm_2(conv, training=training)
 
         # skip here if we have different strides or different number of filters
-        if self.indentity_skip:
+        if self.identity_skip or skip.shape[-1] != conv.shape[-1]:
             skip = self.conv_identity(skip)
             skip = self.norm_identity(skip)
 
         conv = K.layers.Add()([skip, conv])
-        conv = self.activation(conv)
+        conv = self.activation_2(conv)
 
         return conv
 
