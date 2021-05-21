@@ -1,12 +1,10 @@
 # CellX
 
-Code for CellX and related projects
-
-`/cellx` for any python libs  
+Code for CellX and related projects.
 
 ---
 
-### Installation
+### Local installation
 
 ```sh
 git clone https://github.com/quantumjot/cellx.git
@@ -17,6 +15,17 @@ pip install -e .
 ### Pull requests/Contributions
 See the contributing [guide](CONTRIBUTING.md).
 
+
+### Running in a Docker container
+Build the image:
+```sh
+docker build . -t cellx/cellx:latest
+```
+
+Run a local script using the container:
+```sh
+docker run -it --runtime=nvidia  --rm -v $PWD:/tmp -w /tmp cellx/cellx:latest python ./script.py
+```
 ---
 
 ### Contributors
