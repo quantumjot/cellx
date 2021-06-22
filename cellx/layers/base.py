@@ -1,6 +1,5 @@
 from typing import List, Optional, Union
 
-import tensorflow as tf
 from tensorflow import keras as K
 
 
@@ -24,6 +23,11 @@ class ConvBlockBase(K.layers.Layer):
         Name of activation function.
     strides : int
         Stride of the convolution.
+
+
+    Notes
+    -----
+    * The convolution does not use bias immediately before the batch norm
     """
 
     def __init__(
@@ -37,7 +41,9 @@ class ConvBlockBase(K.layers.Layer):
         **kwargs
     ):
         super().__init__(**kwargs)
-        self.conv = convolution(filters, kernel_size, strides=strides, padding=padding,)
+        self.conv = convolution(
+            filters, kernel_size, strides=strides, padding=padding, use_bias=False,
+        )
         self.norm = K.layers.BatchNormalization()
         self.activation = K.layers.Activation(activation)
 
@@ -63,24 +69,6 @@ class ConvBlockBase(K.layers.Layer):
         return config
 
 
-class ConvBlock2D(ConvBlockBase):
-    """ConvBlock2D."""
-
-    def __init__(self, convolution=K.layers.Conv2D, **kwargs):
-        extra_kwargs = {"convolution": convolution}
-        kwargs.update(extra_kwargs)
-        super().__init__(**kwargs)
-
-
-class ConvBlock3D(ConvBlockBase):
-    """ConvBlock3D."""
-
-    def __init__(self, convolution=K.layers.Conv3D, **kwargs):
-        extra_kwargs = {"convolution": convolution}
-        kwargs.update(extra_kwargs)
-        super().__init__(**kwargs)
-
-
 class EncoderDecoderBase(K.layers.Layer):
     """Base class for encoders and decoders.
 
@@ -103,7 +91,7 @@ class EncoderDecoderBase(K.layers.Layer):
 
     def __init__(
         self,
-        convolution: K.layers.Layer = ConvBlock2D,
+        convolution: K.layers.Layer = None,
         sampling: Optional[K.layers.Layer] = K.layers.MaxPooling2D,
         layers: List[int] = [8, 16, 32],
         **kwargs
@@ -141,73 +129,110 @@ class EncoderDecoderBase(K.layers.Layer):
         return config
 
 
-class Encoder2D(EncoderDecoderBase):
-    """Encoder2D."""
+class ResidualBlockBase(K.layers.Layer):
+    """Base class for residual blocks.
 
-    def __init__(
-        self, convolution=ConvBlock2D, sampling=K.layers.MaxPooling2D, **kwargs
-    ):
-        extra_kwargs = {"convolution": convolution, "sampling": sampling}
-        kwargs.update(extra_kwargs)
-        super().__init__(**kwargs)
+    Keras layer to perform a convolution with batch normalization followed
+    by activation.
 
+    Parameters
+    ----------
+    convolution : keras.layers.Conv
+        A convolutional layer for 2 or 3-dimensions.
+    filters : int
+        The number of convolutional filters.
+    kernel_size : int, tuple
+        Size of the convolutional kernel.
+    padding : str
+        Padding type for convolution.
+    activation : str
+        Name of activation function.
+    strides : int
+        Stride of the convolution.
+    identity_skip : bool, default = False
+        Use an identity projection for the skip
 
-class Encoder3D(EncoderDecoderBase):
-    """Encoder3D."""
+    Notes
+    -----
+    * The convolution does not use bias immediately before the batch norm
 
-    def __init__(
-        self, convolution=ConvBlock3D, sampling=K.layers.MaxPooling3D, **kwargs
-    ):
-        extra_kwargs = {"convolution": convolution, "sampling": sampling}
-        kwargs.update(extra_kwargs)
-        super().__init__(**kwargs)
-
-
-class Encoder3DFlat(EncoderDecoderBase):
-    """Encoder3DFlat."""
+    """
 
     def __init__(
         self,
-        convolution=ConvBlock3D,
-        sampling=K.layers.MaxPooling3D(pool_size=(2, 2, 1)),
+        convolution: K.layers.Layer = K.layers.Conv2D,
+        filters: int = 32,
+        kernel_size: Union[int, tuple] = 3,
+        padding: str = "same",
+        strides: int = 1,
+        activation: str = "swish",
+        identity_skip: bool = False,
         **kwargs
     ):
-        extra_kwargs = {"convolution": convolution, "sampling": sampling}
-        kwargs.update(extra_kwargs)
         super().__init__(**kwargs)
 
+        # convolutional layers
+        self.conv_1 = convolution(
+            filters, kernel_size, strides=strides, padding=padding, use_bias=False,
+        )
+        self.conv_2 = convolution(
+            filters, kernel_size, strides=1, padding=padding, use_bias=False,
+        )
+        self.conv_identity = convolution(
+            filters, kernel_size=1, strides=strides, padding=padding, use_bias=False,
+        )
 
-class Decoder2D(EncoderDecoderBase):
-    """Decoder2D."""
+        # batch normalization
+        self.norm_1 = K.layers.BatchNormalization()
+        self.norm_2 = K.layers.BatchNormalization()
+        self.norm_identity = K.layers.BatchNormalization()
 
-    def __init__(
-        self, convolution=ConvBlock2D, sampling=K.layers.UpSampling2D, **kwargs
-    ):
-        extra_kwargs = {"convolution": convolution, "sampling": sampling}
-        kwargs.update(extra_kwargs)
-        super().__init__(**kwargs)
+        # activation function
+        self.activation_1 = K.layers.Activation(activation)
+        self.activation_2 = K.layers.Activation(activation)
 
+        # identity skip
+        self.identity_skip = identity_skip or strides != 1
 
-class Decoder3D(EncoderDecoderBase):
-    """Decoder3D."""
-
-    def __init__(
-        self, convolution=ConvBlock3D, sampling=K.layers.UpSampling3D, **kwargs
-    ):
-        extra_kwargs = {"convolution": convolution, "sampling": sampling}
-        kwargs.update(extra_kwargs)
-        super().__init__(**kwargs)
-
-
-class RandomNormalSampler(K.layers.Layer):
-    """Uses (z_mean, z_log_var) to sample z."""
+        # store the config so that we can restore it later
+        self._config = {
+            "filters": filters,
+            "kernel_size": kernel_size,
+            "padding": padding,
+            "strides": strides,
+            "activation": activation,
+            "identity_skip": identity_skip,
+        }
+        self._config.update(kwargs)
 
     def call(self, x, training: Optional[bool] = None):
-        z_mean, z_log_var = x
-        epsilon = K.backend.random_normal(shape=tf.shape(z_mean))
-        return z_mean + tf.exp(0.5 * z_log_var) * epsilon
+        """Return the result of the residual block convolution."""
+
+        # store the incoming skip
+        skip = x
+
+        conv = self.conv_1(x)
+        conv = self.norm_1(conv, training=training)
+        conv = self.activation_1(conv)
+
+        conv = self.conv_2(conv)
+        conv = self.norm_2(conv, training=training)
+
+        # skip here if we have different strides or different number of filters
+        if self.identity_skip or skip.shape[-1] != conv.shape[-1]:
+            skip = self.conv_identity(skip)
+            skip = self.norm_identity(skip)
+
+        conv = K.layers.Add()([skip, conv])
+        conv = self.activation_2(conv)
+
+        return conv
+
+    def get_config(self) -> dict:
+        config = super().get_config()
+        config.update(self._config)
+        return config
 
 
 if __name__ == "__main__":
-    # boilerplate
     pass

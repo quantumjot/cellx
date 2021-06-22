@@ -55,19 +55,19 @@ class UNet(K.Model):
     -----
     Based on the original publications:
 
-    U-Net: Convolutional Networks for Biomedical Image Segmentation
-    Olaf Ronneberger, Philipp Fischer and Thomas Brox
-    http://arxiv.org/abs/1505.04597
+        U-Net: Convolutional Networks for Biomedical Image Segmentation
+        Olaf Ronneberger, Philipp Fischer and Thomas Brox
+        http://arxiv.org/abs/1505.04597
 
-    3D U-Net: Learning Dense Volumetric Segmentation from Sparse Annotation
-    Ozgun Cicek, Ahmed Abdulkadir, Soeren S. Lienkamp, Thomas Brox
-    and Olaf Ronneberger
-    https://arxiv.org/abs/1606.06650
+        3D U-Net: Learning Dense Volumetric Segmentation from Sparse Annotation
+        Ozgun Cicek, Ahmed Abdulkadir, Soeren S. Lienkamp, Thomas Brox
+        and Olaf Ronneberger
+        https://arxiv.org/abs/1606.06650
 
-    Filter doubling from:
-    Rethinking the Inception Architecture for Computer Vision.
-    Szegedy C., Vanhoucke V., Ioffe S., Shlens J., Wojn, Z.
-    https://arxiv.org/abs/1512.00567
+        Filter doubling from:
+        Rethinking the Inception Architecture for Computer Vision.
+        Szegedy C., Vanhoucke V., Ioffe S., Shlens J., Wojn, Z.
+        https://arxiv.org/abs/1512.00567
     """
 
     def __init__(
@@ -87,7 +87,8 @@ class UNet(K.Model):
         # set the skip connection here
         if skip.upper() not in SkipConnection._member_names_:
             raise ValueError(f"Skip connection {skip} not recognized.")
-        self._skip = SkipConnection[skip.upper()]
+
+        self._skips = [K.layers.Concatenate(axis=-1) for i in range(len(layers) - 1)]
 
         # set up the convolutions
         self._encoder = [
@@ -97,33 +98,38 @@ class UNet(K.Model):
             convolution(filters=k, name=f"Decoder{i}")
             for i, k in enumerate(layers[:-1])
         ]
+
         self._decoder_output = convolution(
             filters=output_filters, kernel_size=1, activation="linear", name="Output"
         )
 
+        assert len(self._encoder) == len(self._decoder) + 1
+        assert len(self._skips) == len(self._decoder)
+
         # set up the up/downsampling
         # TODO(arl): these may already be instantiated with custom params
         # TODO(arl): if using a transpose convolution, we need to set the number of filters
-        self._downsampling = downsampling()
-        self._upsampling = upsampling()
+        self._downsamplers = [downsampling() for i in range(len(layers) - 1)]
+        self._upsamplers = [upsampling() for i in range(len(layers) - 1)]
 
     def call(self, x, training: Optional[bool] = None):
         # build the encoder arm
         skips = []
-        for conv in self._encoder:
+        for level, conv in enumerate(self._encoder):
             x = conv(x, training=training)
             if conv != self._encoder[-1]:
                 skips.append(x)
-                x = self._downsampling(x)
+                x = self._downsamplers[level](x)
 
         # build the decoder arm using skips
-        x = self._upsampling(x)
+        x = self._upsamplers[-1](x)
         for level, conv in list(enumerate(self._decoder))[::-1]:
-            x = self._skip([x, skips[level]])
+            x = self._skips[level]([x, skips[level]])
             x = conv(x, training=training)
             if conv != self._decoder[0]:
-                x = self._upsampling(x)
+                x = self._upsamplers[level - 1](x)
 
         # final convolution for output
         x = self._decoder_output(x)
+
         return x
