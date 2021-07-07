@@ -34,7 +34,7 @@ def _normalize(x, shape):
     for dim in range(n_channels):
         x[..., dim] = nrm(x[..., dim])
 
-    # TODO(arl): ????
+    # TODO(arl): this scales the data back to uint8(ish)
     x = np.clip(255.0 * ((x + 1.0) / 5.0), 0, 255)
     return x
 
@@ -82,7 +82,7 @@ def lazy_load_images(
     """
 
     if isinstance(data, np.ndarray):
-        return da.from_array(data)
+        return da.from_array(data, chunks="auto")
 
     if not isinstance(data, list):
         data = [data]
