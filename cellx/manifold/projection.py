@@ -1,5 +1,6 @@
+import os
 from functools import partial
-from typing import Tuple, Union
+from typing import List, Tuple, Union
 
 import numpy as np
 from scipy.stats import binned_statistic_2d
@@ -29,18 +30,43 @@ class ManifoldProjection2D:
     images : list of str or (N, W, H, C) np.ndarray
         A list of image filenames or a numpy array of N images, width W, height
         H, and C channels.
+    normalize : bool, default = True
+        Normalize the images to mean = 0, std = 1
     output_shape : tuple of int
         Final size to reshape individual image patches to for the montage.
     """
 
-    def __init__(self, images: list, output_shape: tuple = (64, 64)):
+    def __init__(
+        self,
+        images: Union[os.PathLike, np.ndarray, List[os.PathLike]],
+        normalize: bool = True,
+        output_shape: Tuple[int] = (64, 64),
+    ):
         self._output_shape = output_shape
-        self._images = lazy_load_images(images)
+        self._images = lazy_load_images(
+            images, normalize=normalize, coerce_shape=output_shape
+        )
 
         if self._images.ndim != 4:
             raise ValueError(
                 f"Image data should be at least NWHC. Found shape: {self._images.shape}."
             )
+
+        self._projection = None
+        self._extent = None
+        self._counts = None
+
+    @property
+    def projection(self):
+        return self._projection
+
+    @property
+    def counts(self):
+        return self._counts
+
+    @property
+    def extent(self):
+        return self._extent
 
     def __call__(
         self,
@@ -108,7 +134,7 @@ class ManifoldProjection2D:
         # now make the grid image
         full_bins = [int(b) for b in self._output_shape]
         half_bins = [b // 2 for b in self._output_shape]
-        imgrid = np.zeros(
+        projection = np.zeros(
             (
                 (full_bins[0] + 1) * bins + half_bins[0],
                 (full_bins[1] + 1) * bins + half_bins[1],
@@ -135,8 +161,12 @@ class ManifoldProjection2D:
                 1,
             )
 
-            imgrid[blockx, blocky, :] = im
+            projection[blockx, blocky, :] = im
 
         extent = (min(xe), max(xe), min(ye), max(ye))
 
-        return imgrid, counts, extent
+        self._projection = projection
+        self._counts = counts
+        self._extent = extent
+
+        return projection, counts, extent
