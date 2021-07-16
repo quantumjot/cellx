@@ -1,12 +1,12 @@
-from enum import Enum
 from typing import List, Optional
 
 from tensorflow import keras as K
 
+from ..utils import CallableEnum
 from ..layers import ConvBlock2D
 
 
-class SkipConnection(Enum):
+class SkipConnection(CallableEnum):
     """Skip connections for UNet."""
 
     ELEMENTWISE_ADD = K.layers.Add()
