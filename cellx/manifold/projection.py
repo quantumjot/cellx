@@ -11,6 +11,17 @@ from ..utils import CallableEnum
 
 
 class ProjectionMethod(CallableEnum):
+    """A method to collapse samples when generating the final image.
+
+    Available methods:
+        * MEAN - the per-pixel mean of the images in the bin
+        * MAX - the per-pixel maximum of the images in the bin
+        * MIN - the per-pixel minimum of the images in the bin
+        * SUM - the per-pixel sum of the images in the bin
+        * STD - the per-pixel standard deviation of images in the bin
+        * FIRST - the first image in the bin
+    """
+
     MEAN = partial(np.mean, axis=0)
     MAX = partial(np.max, axis=0)
     MIN = partial(np.min, axis=0)
@@ -34,6 +45,13 @@ class ManifoldProjection2D:
         Normalize the images to mean = 0, std = 1
     output_shape : tuple of int
         Final size to reshape individual image patches to for the montage.
+
+
+    Attributes
+    ----------
+    projection : np.ndarray
+    extent : tuple
+    counts : np.ndarray
     """
 
     def __init__(

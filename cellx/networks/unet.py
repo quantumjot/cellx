@@ -1,21 +1,26 @@
+from functools import partial
 from typing import List, Optional
 
 from tensorflow import keras as K
 
-from ..utils import CallableEnum
 from ..layers import ConvBlock2D
+from ..utils import CallableEnum
 
 
 class SkipConnection(CallableEnum):
-    """Skip connections for UNet."""
+    """Skip connections for UNet.
 
-    ELEMENTWISE_ADD = K.layers.Add()
-    ELEMENTWISE_MULTIPLY = K.layers.Multiply()
-    CONCATENATE = K.layers.Concatenate(axis=-1)
-    NONE = lambda x: x[0]
+    The skip property allows different skip connection types to be specified:
+        * ELEMENTWISE_ADD - elementwise addition of filters
+        * ELEMENTWISE_MULTIPLY - elementwise multiplication of filters
+        * CONCATENATE - filter concatenation
+        * NONE - no bridge information, resembles an autoencoder
+    """
 
-    def __call__(self, inputs):
-        return self.value(inputs)
+    ELEMENTWISE_ADD = partial(K.layers.Add)
+    ELEMENTWISE_MULTIPLY = partial(K.layers.Multiply)
+    CONCATENATE = partial(K.layers.Concatenate, axis=-1)
+    NONE = partial(lambda x: x[0])
 
 
 class UNet(K.Model):
@@ -25,12 +30,7 @@ class UNet(K.Model):
     pad each convolution such that the output following convolution is the same
     size as the input. Also, bridges are elementwise operations of the filters
     to approach a residual-net architecture (resnet), although this can be
-    changed by the user.  The skip property allows different skip connection
-    types to be specified:
-        - elementwise_add
-        - elementwise_multiply
-        - concatenate
-        - None (no bridge information, resembles an autoencoder)
+    changed by the user.
 
     ** The final layer does not have an activation function. **
 
@@ -55,19 +55,13 @@ class UNet(K.Model):
     -----
     Based on the original publications:
 
-        U-Net: Convolutional Networks for Biomedical Image Segmentation
-        Olaf Ronneberger, Philipp Fischer and Thomas Brox
-        http://arxiv.org/abs/1505.04597
+    U-Net: Convolutional Networks for Biomedical Image Segmentation
+    Ronneberger, Fischer and Brox
+    http://arxiv.org/abs/1505.04597
 
-        3D U-Net: Learning Dense Volumetric Segmentation from Sparse Annotation
-        Ozgun Cicek, Ahmed Abdulkadir, Soeren S. Lienkamp, Thomas Brox
-        and Olaf Ronneberger
-        https://arxiv.org/abs/1606.06650
-
-        Filter doubling from:
-        Rethinking the Inception Architecture for Computer Vision.
-        Szegedy C., Vanhoucke V., Ioffe S., Shlens J., Wojn, Z.
-        https://arxiv.org/abs/1512.00567
+    3D U-Net: Learning Dense Volumetric Segmentation from Sparse Annotation
+    Cicek, Abdulkadir, Lienkamp, Brox and Olaf Ronneberger
+    https://arxiv.org/abs/1606.06650
     """
 
     def __init__(
