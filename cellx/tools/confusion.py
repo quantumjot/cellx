@@ -4,7 +4,6 @@ from typing import List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
-import os
 
 def plot_confusion_matrix(
     cm: np.ndarray,
@@ -64,7 +63,8 @@ def plot_confusion_matrix(
             raise ValueError("Error shape does not match confusion matrix shape")
 
     txt_params = {
-        "horizontalalignment": "center", "verticalalignment": "center",
+        "horizontalalignment": "center",
+        "verticalalignment": "center",
     }
 
     # use white text if squares are dark; otherwise black
