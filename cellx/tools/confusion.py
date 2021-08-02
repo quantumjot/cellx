@@ -4,6 +4,7 @@ from typing import List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 
+import os
 
 def plot_confusion_matrix(
     cm: np.ndarray,
@@ -45,7 +46,6 @@ def plot_confusion_matrix(
     plt.xticks(tick_marks, class_names, rotation=45)
     plt.yticks(tick_marks, class_names)
 
-
     if cm.ndim != 2 or cm.shape[0] != cm.shape[1]:
         raise ValueError("Confusion matrix must be a 2D square array")
 
@@ -63,6 +63,9 @@ def plot_confusion_matrix(
         if errors.shape != cm.shape:
             raise ValueError("Error shape does not match confusion matrix shape")
 
+    txt_params = {
+        "horizontalalignment": "center", "verticalalignment": "center",
+    }
 
     # use white text if squares are dark; otherwise black
     threshold = cm.max() / 2.0
@@ -71,7 +74,7 @@ def plot_confusion_matrix(
         value = f"{cm[i, j]: .2f}"
         if errors is not None:
             value += f" \n \U000000B1 {errors[i, j]: .2f}"
-        plt.text(j, i, value, horizontalalignment="center", verticalalignment="center", color=color)
+        plt.text(j, i, value, color=color, **txt_params)
 
     plt.tight_layout()
     plt.ylabel("True label")
