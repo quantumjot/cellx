@@ -106,6 +106,9 @@ class ManifoldProjection2D:
         method : str or ProjectionMethod, default = 'mean'
             A method to collapse samples when generating the final image.
                 * MEAN - the per-pixel mean of the images in the bin
+                * MAX - the per-pixel maximum of the images in the bin
+                * MIN - the per-pixel minimum of the images in the bin
+                * SUM - the per-pixel sum of the images in the bin
                 * STD - the per-pixel standard deviation of images in the bin
                 * FIRST - the first image in the bin
 

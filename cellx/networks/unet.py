@@ -44,8 +44,12 @@ class UNet(K.Model):
         An upsampling layer.
     layers : list of int
         A list of filters for each layer.
-    skip : str
-        The skip connection type.
+    skip : str, SkipConnection
+        The skip connection type:
+            * ELEMENTWISE_ADD - elementwise addition of filters
+            * ELEMENTWISE_MULTIPLY - elementwise multiplication of filters
+            * CONCATENATE - filter concatenation
+            * NONE - no bridge information, resembles an autoencoder
     output_filters : int
         The number of output filters.
     name : str
