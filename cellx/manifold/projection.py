@@ -50,8 +50,14 @@ class ManifoldProjection2D:
     Attributes
     ----------
     projection : np.ndarray
-    extent : tuple
+        An image with example image patches from the manifold arranged on a
+        grid.
     counts : np.ndarray
+        A 2d histogram of the number of image patches per bin. Note that
+        this is on a different scale to the imgrid.
+    extent : tuple
+        Delimits the minimum and maximum bin edges, in each dimension, used
+        to create the result.
     """
 
     def __init__(

@@ -9,8 +9,8 @@ def augment_timeseries_dummy(x: tf.Tensor) -> tf.Tensor:
 
     Parameters
     ----------
-    x : tf.Tensor (T, N)
-        The 2D tensor to be augmented.
+    x : tf.Tensor (T, ...)
+        The tensor to be augmented.
 
     Returns
     -------
@@ -26,8 +26,8 @@ def augment_timeseries_shift(x: tf.Tensor, max_shift: int = 10) -> tf.Tensor:
 
     Parameters
     ----------
-    x : tf.Tensor (T, N)
-        The 2D tensor to be augmented.
+    x : tf.Tensor (T, ...)
+        The tensor to be augmented.
     max_shift : int
         The maximum shift to be randomly applied to the tensor.
 
@@ -48,8 +48,8 @@ def augment_timeseries_crop(x: tf.Tensor, min_length: int = 30) -> tf.Tensor:
 
     Parameters
     ----------
-    x : tf.Tensor (T, N)
-        The 2D tensor to be augmented.
+    x : tf.Tensor (T, ...)
+        The tensor to be augmented.
     min_length : int
         The minimum length of the augmented tensor.
 
@@ -70,8 +70,8 @@ def augment_timeseries_swap(x: tf.Tensor, n_swaps: int = 10) -> tf.Tensor:
 
     Parameters
     ----------
-    x : tf.Tensor (T, N)
-        The 2D tensor to be augmented.
+    x : tf.Tensor (T, ...)
+        The tensor to be augmented.
     n_swaps : int
         The number of swaps to be performed.
 
@@ -98,8 +98,8 @@ def augment_timeseries_shuffle(x: tf.Tensor) -> tf.Tensor:
 
     Parameters
     ----------
-    x : tf.Tensor (T, N)
-        The 2D tensor to be augmented.
+    x : tf.Tensor (T, ...)
+        The tensor to be augmented.
 
     Returns
     -------
@@ -118,8 +118,8 @@ def augment_timeseries_noise(x: tf.Tensor, stddev_spread: float = 0.15) -> tf.Te
 
     Parameters
     ----------
-    x : tf.Tensor (T, N)
-        The 2D tensor to be augmented.
+    x : tf.Tensor (T, ...)
+        The tensor to be augmented.
     sttdev_spread : float
         The standard deviation of the Gaussian noise.
 
@@ -143,8 +143,8 @@ def augment_timeseries_corrupt(
 
     Parameters
     ----------
-    x : tf.Tensor (T, N)
-        The 2D tensor to be augmented.
+    x : tf.Tensor (T, ...)
+        The tensor to be augmented.
     n_corrupt : int
         The number of timepoints to randomly corrupt.
     sttdev_spread : float
@@ -174,8 +174,8 @@ def augment_timeseries_dropout(x: tf.Tensor, n_dropout: int = 10) -> tf.Tensor:
 
     Parameters
     ----------
-    x : tf.Tensor (T, N)
-        The 2D tensor to be augmented.
+    x : tf.Tensor (T, ...)
+        The tensor to be augmented.
     n_dropout : int
         The number of timepoints to randomly drop out.
 
