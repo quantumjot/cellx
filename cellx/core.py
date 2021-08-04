@@ -10,7 +10,6 @@ def _get_custom_layers_dict() -> dict:
     Returns
     -------
     custom_objects : dict[str, layer]
-
     """
     from . import layers
 
