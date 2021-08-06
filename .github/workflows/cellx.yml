@@ -27,7 +27,7 @@ jobs:
         Run tests with pytest
       run: |
         pip install -e .
-        pytest
-     - name: Coverage
-       uses: codecov/codecov-action@v1
+        pytest -v --cov=cellx --cov-report=xml
+    - name: Coverage
+        uses: codecov/codecov-action@v1
 
