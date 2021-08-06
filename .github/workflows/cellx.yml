@@ -22,8 +22,10 @@ jobs:
     - name: Run Flake8
       run: |
         flake8
-    - name: Test with pytest
+    - name: Run tests with pytest
       run: |
         pip install -e .
-        pytest
+        pytest -v --color=yes --cov=cellx --cov-report=xml
+     - name: Coverage
+        uses: codecov/codecov-action@v1
 
