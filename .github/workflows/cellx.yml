@@ -27,5 +27,5 @@ jobs:
         pip install -e .
         pytest -v --color=yes --cov=cellx --cov-report=xml
      - name: Coverage
-        uses: codecov/codecov-action@v1
+       uses: codecov/codecov-action@v1
 
