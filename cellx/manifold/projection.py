@@ -20,6 +20,7 @@ class ProjectionMethod(CallableEnum):
         * SUM - the per-pixel sum of the images in the bin
         * STD - the per-pixel standard deviation of images in the bin
         * FIRST - the first image in the bin
+        * RAND - random image in the bin
     """
 
     MEAN = partial(np.mean, axis=0)
@@ -28,6 +29,8 @@ class ProjectionMethod(CallableEnum):
     SUM = partial(np.sum, axis=0)
     STD = partial(np.std, axis=0)
     FIRST = partial(lambda x: x[0, ...])
+    RAND = partial(lambda x: (x[np.random.choice(len(x[:,...])), ...]))
+
 
 
 class ManifoldProjection2D:
@@ -117,6 +120,7 @@ class ManifoldProjection2D:
                 * SUM - the per-pixel sum of the images in the bin
                 * STD - the per-pixel standard deviation of images in the bin
                 * FIRST - the first image in the bin
+                * RAND - random image in the bin
 
         Returns
         -------
