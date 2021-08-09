@@ -32,7 +32,6 @@ class ProjectionMethod(CallableEnum):
     RAND = partial(lambda x: (x[np.random.choice(len(x[:,...])), ...]))
 
 
-
 class ManifoldProjection2D:
     """ManifoldProjection2D.
 
