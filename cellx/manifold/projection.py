@@ -29,7 +29,7 @@ class ProjectionMethod(CallableEnum):
     SUM = partial(np.sum, axis=0)
     STD = partial(np.std, axis=0)
     FIRST = partial(lambda x: x[0, ...])
-    RANDOM = partial(lambda x: (x[np.random.choice(len(x[:,...])), ...]))
+    RANDOM = partial(lambda x: x[np.random.choice(x.shape[0]), ...])
 
 
 class ManifoldProjection2D:
