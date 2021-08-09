@@ -38,10 +38,10 @@ class VAESampler(K.layers.Layer):
         )
 
         if intermediate_dims is not None:
-            self._fc_1 = K.layers.Dense(
+            self._fc1 = K.layers.Dense(
                 intermediate_dims, activation="swish", name="intermediate_FC1",
             )
-            self._fc_2 = K.layers.Dense(
+            self._fc2 = K.layers.Dense(
                 intermediate_dims, activation="swish", name="intermediate_FC2",
             )
         else:
