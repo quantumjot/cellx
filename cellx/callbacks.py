@@ -21,7 +21,9 @@ def test_pred_multiclass(_pred):
     return np.argmax(softmax(_pred, axis=-1), axis=-1).astype(np.int)
 
 
-def tensorboard_montage_callback(model: K.Model, test_images: np.ndarray, logdir: str):
+def tensorboard_montage_callback(
+    model: K.Model, test_images: np.ndarray, logdir: str
+) -> K.callbacks.LambdaCallback:
     """Create a callback that writes summary montage images to a tensorboard
     log. Useful while training networks that generate images as output.
 
@@ -61,7 +63,7 @@ def tensorboard_confusion_matrix_callback(
     logdir: str,
     class_names: list = [],
     is_binary: bool = True,
-):
+) -> K.callbacks.LambdaCallback:
 
     """Create a callback that writes a summary confusion matrix to a tensorboard
     log. Useful while training networks that perform classification.
@@ -111,8 +113,8 @@ def tensorboard_confusion_matrix_callback(
     return K.callbacks.LambdaCallback(on_epoch_end=log_confusion_matrix)
 
 
-def _plot_to_image(figure):
-    """ converts the matplotlib plot specified by 'figure' to a PNG image and
+def _plot_to_image(figure: plt.Figure) -> tf.Tensor:
+    """Converts the matplotlib plot specified by 'figure' to a PNG image and
     returns it. The supplied figure is closed and inaccessible after this call.
     """
     # Save the plot to a PNG in memory.
@@ -129,8 +131,10 @@ def _plot_to_image(figure):
     return image
 
 
-def _plot_montage(x, max_images: int = 32, columns: int = 8, rows: int = 4):
-    """ make a montage of the images """
+def _plot_montage(
+    x, max_images: int = 32, columns: int = 8, rows: int = 4
+) -> tf.Tensor:
+    """Make a montage of the images."""
 
     # if the prediction returns a tuple, assume the first one is the image
     if isinstance(x, tuple):
