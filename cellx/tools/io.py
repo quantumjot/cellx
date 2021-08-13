@@ -28,27 +28,24 @@ class EncodingWriter:
     filename : str
         A path and filename for the json file storing the metadata.
 
-    Usage
-    -----
+    Examples
+    --------
 
-    with EncodingWriter('/path/to/encodings.json') as writer:
-
-        # put your code here to generate the encoding
-        src_file = 'GV0800/Pos12/data.tif'
-        encoding = some_function_to_generate_encoding(src_file)
-
-        # save the encoding as a destination file:
-        dst_file = 'GV0800/Pos12/data_encoded.npz'
-
-        # store metadata, e.g. model parameters used for encoding
-        metadata = {'model': 'my_cool_model.h5',
-                    'version': '0027'}
-
-        writer.write(encoding,
-                     src_file,
-                     dst_file,
-                     class_label=0,
-                     metadata=metadata)
+    >>> with EncodingWriter('/path/to/encodings.json') as writer:
+    >>>     # put your code here to generate the encoding
+    >>>     src_file = 'GV0800/Pos12/data.tif'
+    >>>     encoding = some_function_to_generate_encoding(src_file)
+    >>>     # save the encoding as a destination file:
+    >>>     dst_file = 'GV0800/Pos12/data_encoded.npz'
+    >>>     # store metadata, e.g. model parameters used for encoding
+    >>>     metadata = {'model': 'my_cool_model.h5', 'version': '0027'}
+    >>>     writer.write(
+    >>>         encoding,
+    >>>         src_file,
+    >>>         dst_file,
+    >>>         class_label=0,
+    >>>         metadata=metadata
+    >>>     )
 
     """
 
@@ -110,11 +107,11 @@ class EncodingReader:
     filename : str
         A path and filename for the json file storing the metadata.
 
-    Usage
-    -----
-    encodings = EncodingReader('/path/to/encodings.json')
-    for encoded, metadata in encodings:
-        print(encoding, metadata)
+    Examples
+    --------
+    >>> encodings = EncodingReader('/path/to/encodings.json')
+    >>> for encoded, metadata in encodings:
+    >>>     print(encoding, metadata)
 
     """
 
