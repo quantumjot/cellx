@@ -36,7 +36,7 @@ def build_split_TCN(
         Dropout rate used during training of the TCN.
     activation : str
         Name of an activation function for the TCN/Prediction head.
-    dilations : list
+    dilations : list[int]
         A list of dilations for the TCN.
     kernel_initializer : str
         Name of a kernel initializer for the TCN.
@@ -45,7 +45,7 @@ def build_split_TCN(
     -------
     models : tuple (3, )
         Three Keras Models representing:
-            * Full_TCN with TCN and prediction head (compiled with Adam optimizer)
+            * Full_TCN with prediction head (compiled with Adam optimizer)
             * Prediction_head
             * TCN only
     """

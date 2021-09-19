@@ -31,4 +31,4 @@ class PCATransform(K.layers.Layer):
             tf.matmul(tf.reshape(x, (-1, self.n_components)), self.components),
             (-1, x.shape[1], self.n_components),
         )
-        return T - tf.math.reduce_mean(T, axis=1)
+        return T - tf.math.reduce_mean(T, axis=1, keepdims=True)
