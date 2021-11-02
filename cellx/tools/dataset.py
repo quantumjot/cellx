@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from typing import List, Optional, Union
 
 import numpy as np
@@ -37,7 +39,10 @@ def write_dataset(
     if not filename.endswith(".tfrecord"):
         filename = f"{filename}.tfrecord"
 
-    assert images.dtype in (np.uint8, np.uint16,)
+    assert images.dtype in (
+        np.uint8,
+        np.uint16,
+    )
     assert images.ndim > 2 and images.ndim < 6
 
     if labels is not None:
@@ -70,7 +75,7 @@ def parse_tfrecord(
     read_label: bool = False,
     read_weights: bool = False,
 ):
-    """ Parse input images and return the one_hot label encoding.
+    """Parse input images and return the one_hot label encoding.
 
     Parameters
     ----------
@@ -118,7 +123,20 @@ def parse_tfrecord(
         return image
 
 
-def build_dataset(files: Union[List[str], str], **kwargs):
+def per_channel_normalize(x: tf.Tensor) -> tf.Tensor:
+    """Independently normalize each channel of an image to zero mean, unit
+    variance."""
+    stack = []
+    for dim in range(x.shape[-1]):
+        channel = tf.expand_dims(x[..., dim], -1)
+        normalized = tf.squeeze(tf.image.per_image_standardization(channel))
+        stack.append(normalized)
+    x = tf.stack(stack, axis=-1)
+    x = tf.clip_by_value(x, -4.0, 4.0)
+    return x
+
+
+def build_dataset(files: Union[List[os.PathLike], os.PathLike], **kwargs):
     """Build a TF Dataset from a list of TFRecordFiles. Map the parser to it.
 
     Parameters
@@ -131,6 +149,14 @@ def build_dataset(files: Union[List[str], str], **kwargs):
     dataset : tf.data.Dataset
         The TF dataset.
     """
+
+    # parse the input
+    if not isinstance(files, list):
+        fn, ext = os.path.splitext(files)
+        if ext != "tfrecord":
+            pth = Path(files)
+            files = [pth / f for f in os.listdir(files) if f.endswith(".tfrecord")]
+
     dataset = tf.data.TFRecordDataset(files)
     dataset = dataset.map(lambda x: parse_tfrecord(x, **kwargs), num_parallel_calls=8)
     return dataset

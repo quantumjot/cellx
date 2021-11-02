@@ -31,7 +31,7 @@ def compute_class_weight_dict(
     return {unique_labels[k]: w for k, w in enumerate(_weight)}
 
 
-def tensorboard_logdir(path: os.PathLike) -> os.PathLike:
+def create_tensorboard_log_dir(path: os.PathLike) -> os.PathLike:
     """Create a new TensorBoard log dir using the current system date and time.
 
     Parameters
