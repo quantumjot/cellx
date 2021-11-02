@@ -41,9 +41,9 @@ def append_conditional_augmentation(
 
     for augmentation in augmentations:
         dataset = dataset.map(
-            lambda *x: tf.cond(
+            lambda x: tf.cond(
                 tf.random.uniform([], 0.0, 1.0) < accept_probability,
-                lambda: augmentation(*x),
+                lambda: augmentation(x),
                 lambda: x,
             )
         )
