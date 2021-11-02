@@ -32,3 +32,8 @@ class PCATransform(K.layers.Layer):
             (-1, x.shape[1], self.n_components),
         )
         return T - tf.math.reduce_mean(T, axis=1, keepdims=True)
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({"components": self.components})
+        return config
