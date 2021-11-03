@@ -78,11 +78,4 @@ def build_split_TCN(
     o_2 = tcn_split_2(o_1)
     tcn = K.models.Model(inputs=[i], outputs=[o_2], name="Full_TCN")
 
-    # compile the full TCN
-    tcn.compile(
-        optimizer=K.optimizers.Adam(learning_rate=0.001),
-        loss=K.losses.SparseCategoricalCrossentropy(from_logits=True),
-        metrics=["accuracy"],
-    )
-
     return tcn, tcn_split_1, tcn_split_2
