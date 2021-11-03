@@ -10,9 +10,12 @@ class PCATransform(K.layers.Layer):
 
     Parameters
     ----------
-    components : np.array, tf.Tensor (N, N)
+    components : array, tf.Tensor (N, N)
         A square matrix of principal components to perform the transform. These
         are calculated using `sklearn.decomposition.PCA`.
+    mean : array, tf.Tensor (N, )
+        An array representing the per-feature empirical mean, estimated from the
+        training set.
 
     Notes
     -----
@@ -20,20 +23,26 @@ class PCATransform(K.layers.Layer):
     input features, i.e. that the components matrix is square.
     """
 
-    def __init__(self, components: np.ndarray, **kwargs):
+    def __init__(self, components: np.ndarray, mean: np.ndarray, **kwargs):
         super().__init__(**kwargs)
         self.components = components
+        self.mean = mean
         self.n_components = components.shape[-1]
 
+        self._config = {"components": components, "mean": mean}
+
     def call(self, x, training: Optional[bool] = None):
-        """Perform the transformation: T = XW"""
+        """Perform the transformation: T = (X-mu)W"""
         T = tf.reshape(
-            tf.matmul(tf.reshape(x, (-1, self.n_components)), self.components),
+            tf.matmul(
+                tf.reshape(x, (-1, self.n_components)) - self.mean, self.components
+            ),
             (-1, x.shape[1], self.n_components),
         )
-        return T - tf.math.reduce_mean(T, axis=1, keepdims=True)
+        return T
+        # return T - tf.math.reduce_mean(T, axis=1, keepdims=True)
 
     def get_config(self):
         config = super().get_config()
-        config.update({"components": self.components})
+        config.update(self._config)
         return config
