@@ -32,21 +32,35 @@ class VAESampler(K.layers.Layer):
     ):
         super().__init__(**kwargs)
         self.sampler = RandomNormalSampler()
-        self.z_mean = K.layers.Dense(latent_dims, name="z_mean",)
+        self.z_mean = K.layers.Dense(
+            latent_dims,
+            name="z_mean",
+        )
         self.z_log_var = K.layers.Dense(
-            latent_dims, activation="softplus", name="z_log_var",
+            latent_dims,
+            activation="softplus",
+            name="z_log_var",
         )
 
         if intermediate_dims is not None:
             self._fc1 = K.layers.Dense(
-                intermediate_dims, activation="swish", name="intermediate_FC1",
+                intermediate_dims,
+                activation="swish",
+                name="intermediate_FC1",
             )
             self._fc2 = K.layers.Dense(
-                intermediate_dims, activation="swish", name="intermediate_FC2",
+                intermediate_dims,
+                activation="swish",
+                name="intermediate_FC2",
             )
         else:
             self._fc1 = K.layers.Lambda(lambda x: x)
             self._fc2 = K.layers.Lambda(lambda x: x)
+
+        self._config = {
+            "latent_dims": latent_dims,
+            "intermediate_dims": intermediate_dims,
+        }
 
     def call(self, x, training: Optional[bool] = None):
         x = K.layers.Flatten()(x)
@@ -56,6 +70,11 @@ class VAESampler(K.layers.Layer):
         z_log_var = self.z_log_var(x_fc2)
         z = self.sampler([z_mean, z_log_var], training=training)
         return z_mean, z_log_var, z
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(self._config)
+        return config
 
 
 if __name__ == "__main__":
