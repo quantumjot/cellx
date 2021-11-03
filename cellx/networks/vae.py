@@ -21,7 +21,9 @@ class VAEReshapeLatents(K.layers.Layer):
     def __init__(self, shape: Tuple[int], latent_dims: int = 32, **kwargs):
         super().__init__(**kwargs)
         self.dense = K.layers.Dense(
-            np.prod(shape), activation="swish", name="reshape_FC",
+            np.prod(shape),
+            activation="swish",
+            name="reshape_FC",
         )
         self.reshape = K.layers.Reshape(shape, name="reshape")
 
@@ -85,6 +87,52 @@ def ssim_loss(x, reconstruction):
     return reconstruction_loss
 
 
+def convolutional_variational_encoder(
+    encoder: K.layers.Layer,
+    sampler: K.layers.Layer = VAESampler,
+    input_shape: Tuple[int] = (64, 64, 2),
+    latent_dims: int = 32,
+    intermediate_dims: Optional[int] = None,
+    components: Optional[np.ndarray] = None,
+) -> K.Model:
+    """Build a convolutional variational encoder, i.e. a convolutional encoder
+    and random normal sampler.
+
+    Parameters
+    ----------
+    encoder : K.layers.Layer
+        A convolutional encoder layer or model.
+    sampler : K.layers.Layer
+        A sampler layer to sample.
+    input_shape : tuple (W, H, C)
+        The shape of the input image.
+    latent_dims : int
+        The size of the latent space representation.
+    intermediate_dims : int, Optional
+        The size of the intermediate representation.  The intermediate FC
+        connected layer sits between the convolutional encoder and the
+        sampling layer. By specifying the intermediate layer, an additional
+        FC layer is added before the sampler.
+
+    Returns
+    -------
+    model : K.Model
+        The model.
+    """
+
+    # setup the encoder
+    sampler = sampler(latent_dims=latent_dims, intermediate_dims=intermediate_dims)
+
+    i = K.layers.Input(shape=input_shape)
+    x = encoder(i)
+    z_mean, z_log_var, z = sampler(x)
+    model = K.Model(
+        inputs=[i], outputs=[z_mean, z_log_var, z], name="variational_encoder"
+    )
+
+    return model
+
+
 class VAECapacity(K.Model):
     """β-Variational AutoEncoder with Capacity loss.
 
@@ -143,11 +191,16 @@ class VAECapacity(K.Model):
     ):
 
         super().__init__(**kwargs)
-        self.encoder = encoder
+
         self.decoder = decoder
-        self.sampler = sampler(
-            latent_dims=latent_dims, intermediate_dims=intermediate_dims
+        self.encoder = convolutional_variational_encoder(
+            encoder=encoder,
+            sampler=sampler,
+            input_shape=input_shape,
+            latent_dims=latent_dims,
+            intermediate_dims=intermediate_dims,
         )
+
         self.gamma = gamma
         self.capacity = capacity
         self.max_iter = max_iterations
@@ -236,8 +289,7 @@ class VAECapacity(K.Model):
         z : (N, latent_dims)
             The sampled latents.
         """
-        encoded = self.encoder(x, **kwargs)
-        z_mean, z_log_var, z = self.sampler(encoded)
+        z_mean, z_log_var, z = self.encoder(x, **kwargs)
         return z_mean, z_log_var, z
 
     def decode(self, z, **kwargs):
