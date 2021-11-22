@@ -3,6 +3,16 @@ from typing import List, Optional, Union
 from tensorflow import keras as K
 
 
+class SerializationMixin:
+    """Mixin to allow layer serialization by returning the layer config as
+    a dictionary."""
+
+    def get_config(self) -> dict:
+        config = super().get_config()
+        config.update(self._config)
+        return config
+
+
 class ConvBlockBase(K.layers.Layer):
     """Base class for convolutional blocks.
 
@@ -42,7 +52,11 @@ class ConvBlockBase(K.layers.Layer):
     ):
         super().__init__(**kwargs)
         self.conv = convolution(
-            filters, kernel_size, strides=strides, padding=padding, use_bias=False,
+            filters,
+            kernel_size,
+            strides=strides,
+            padding=padding,
+            use_bias=False,
         )
         self.norm = K.layers.BatchNormalization()
         self.activation = K.layers.Activation(activation)
@@ -173,13 +187,25 @@ class ResidualBlockBase(K.layers.Layer):
 
         # convolutional layers
         self.conv_1 = convolution(
-            filters, kernel_size, strides=strides, padding=padding, use_bias=False,
+            filters,
+            kernel_size,
+            strides=strides,
+            padding=padding,
+            use_bias=False,
         )
         self.conv_2 = convolution(
-            filters, kernel_size, strides=1, padding=padding, use_bias=False,
+            filters,
+            kernel_size,
+            strides=1,
+            padding=padding,
+            use_bias=False,
         )
         self.conv_identity = convolution(
-            filters, kernel_size=1, strides=strides, padding=padding, use_bias=False,
+            filters,
+            kernel_size=1,
+            strides=strides,
+            padding=padding,
+            use_bias=False,
         )
 
         # batch normalization
