@@ -4,10 +4,10 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras as K
 
-from ..layers import VAESampler
+from ..layers import SerializationMixin, VAESampler
 
 
-class VAEReshapeLatents(K.layers.Layer):
+class VAEReshapeLatents(K.layers.Layer, SerializationMixin):
     """VAE latent reshaper.
 
     Parameters
@@ -26,6 +26,7 @@ class VAEReshapeLatents(K.layers.Layer):
             name="reshape_FC",
         )
         self.reshape = K.layers.Reshape(shape, name="reshape")
+        self._config = {"shape": shape, "latent_dims": latent_dims}
 
     def call(self, x, training: Optional[bool] = None):
         x = self.dense(x)
@@ -93,7 +94,6 @@ def convolutional_variational_encoder(
     input_shape: Tuple[int] = (64, 64, 2),
     latent_dims: int = 32,
     intermediate_dims: Optional[int] = None,
-    components: Optional[np.ndarray] = None,
 ) -> K.Model:
     """Build a convolutional variational encoder, i.e. a convolutional encoder
     and random normal sampler.
@@ -129,6 +129,46 @@ def convolutional_variational_encoder(
     model = K.Model(
         inputs=[i], outputs=[z_mean, z_log_var, z], name="variational_encoder"
     )
+
+    return model
+
+
+def convolutional_variational_decoder(
+    decoder: K.layers.Layer,
+    output_shape: Tuple[int] = (64, 64, 2),
+    latent_dims: int = 32,
+) -> K.Model:
+    """Build a convolutional variational decoder.
+
+    Parameters
+    ----------
+    decoder : K.layers.Layer
+        A convolutional decoder layer or model.
+    output_shape : tuple (W, H, C)
+        The shape of the input image.
+    latent_dims : int
+        The size of the latent space representation.
+
+    Returns
+    -------
+    model : K.Model
+        The model.
+    """
+
+    downsamples = len(decoder.layers) - 1
+    bottleneck_shape = [d // 2 ** downsamples for d in output_shape[0:2]]
+    shape = tuple(bottleneck_shape + [decoder.layers[0].conv.filters])
+    reshape = VAEReshapeLatents(shape=shape, latent_dims=latent_dims)
+
+    conv = K.layers.Conv2D(
+        filters=output_shape[-1], kernel_size=1, activation="linear", name="output"
+    )
+
+    i = K.layers.Input(shape=(latent_dims,))
+    x = reshape(i)
+    x = decoder(x)
+    x_hat = conv(x)
+    model = K.Model(inputs=[i], outputs=[x_hat], name="variational_decoder")
 
     return model
 
@@ -189,10 +229,8 @@ class VAECapacity(K.Model):
         reconstruction_loss_fn: Optional[Callable] = mse_loss,
         **kwargs,
     ):
-
         super().__init__(**kwargs)
 
-        self.decoder = decoder
         self.encoder = convolutional_variational_encoder(
             encoder=encoder,
             sampler=sampler,
@@ -201,23 +239,17 @@ class VAECapacity(K.Model):
             intermediate_dims=intermediate_dims,
         )
 
+        self.decoder = convolutional_variational_decoder(
+            decoder=decoder,
+            output_shape=input_shape,
+            latent_dims=latent_dims,
+        )
+
         self.gamma = gamma
         self.capacity = capacity
         self.max_iter = max_iterations
         self._iter = tf.Variable(0.0, trainable=False)
         self._reconstruction_loss_fn = reconstruction_loss_fn
-
-        downsamples = len(encoder.layers) - 1
-        bottleneck_shape = [d // 2 ** downsamples for d in input_shape[0:2]]
-        shape = tuple(bottleneck_shape + [decoder.layers[0].conv.filters])
-        self.reshape = VAEReshapeLatents(shape=shape, latent_dims=latent_dims)
-
-        self._decoder_output = K.layers.Conv2D(
-            filters=input_shape[-1], kernel_size=1, activation="linear", name="output"
-        )
-
-        # self._mse = K.losses.MeanSquaredError()
-        self._n_pixels = np.prod(input_shape)
 
     def train_step(self, x):
         """Training step for VAE."""
@@ -305,7 +337,5 @@ class VAECapacity(K.Model):
         reconstruction : tf.Tensor, np.ndarray (N, W, H, C)
             The reconstructed image.
         """
-        z_reshape = self.reshape(z)
-        reconstruction = self.decoder(z_reshape, **kwargs)
-        reconstruction = self._decoder_output(reconstruction)
+        reconstruction = self.decoder(z, **kwargs)
         return reconstruction
