@@ -3,6 +3,8 @@ from typing import Optional
 import tensorflow as tf
 from tensorflow import keras as K
 
+from .base import SerializationMixin
+
 
 class RandomNormalSampler(K.layers.Layer):
     """Uses (z_mean, z_log_var) to sample z."""
@@ -13,7 +15,7 @@ class RandomNormalSampler(K.layers.Layer):
         return z_mean + tf.exp(0.5 * z_log_var) * epsilon
 
 
-class VAESampler(K.layers.Layer):
+class VAESampler(K.layers.Layer, SerializationMixin):
     """VAE Sampler.
 
     Parameters
@@ -70,11 +72,6 @@ class VAESampler(K.layers.Layer):
         z_log_var = self.z_log_var(x_fc2)
         z = self.sampler([z_mean, z_log_var], training=training)
         return z_mean, z_log_var, z
-
-    def get_config(self):
-        config = super().get_config()
-        config.update(self._config)
-        return config
 
 
 if __name__ == "__main__":

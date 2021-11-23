@@ -4,8 +4,10 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras as K
 
+from .base import SerializationMixin
 
-class PCATransform(K.layers.Layer):
+
+class PCATransform(K.layers.Layer, SerializationMixin):
     """Simple PCA Transform in Keras.
 
     Parameters
@@ -40,9 +42,3 @@ class PCATransform(K.layers.Layer):
             (-1, x.shape[1], self.n_components),
         )
         return T
-        # return T - tf.math.reduce_mean(T, axis=1, keepdims=True)
-
-    def get_config(self):
-        config = super().get_config()
-        config.update(self._config)
-        return config

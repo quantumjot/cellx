@@ -13,7 +13,7 @@ class SerializationMixin:
         return config
 
 
-class ConvBlockBase(K.layers.Layer):
+class ConvBlockBase(K.layers.Layer, SerializationMixin):
     """Base class for convolutional blocks.
 
     Keras layer to perform a convolution with batch normalization followed
@@ -77,13 +77,8 @@ class ConvBlockBase(K.layers.Layer):
         conv = self.norm(conv, training=training)
         return self.activation(conv)
 
-    def get_config(self) -> dict:
-        config = super().get_config()
-        config.update(self._config)
-        return config
 
-
-class EncoderDecoderBase(K.layers.Layer):
+class EncoderDecoderBase(K.layers.Layer, SerializationMixin):
     """Base class for encoders and decoders.
 
     Parameters
@@ -137,13 +132,8 @@ class EncoderDecoderBase(K.layers.Layer):
                 x = self.sampling(x)
         return x
 
-    def get_config(self) -> dict:
-        config = super().get_config()
-        config.update(self._config)
-        return config
 
-
-class ResidualBlockBase(K.layers.Layer):
+class ResidualBlockBase(K.layers.Layer, SerializationMixin):
     """Base class for residual blocks.
 
     Keras layer to perform a convolution with batch normalization followed
@@ -253,11 +243,6 @@ class ResidualBlockBase(K.layers.Layer):
         conv = self.activation_2(conv)
 
         return conv
-
-    def get_config(self) -> dict:
-        config = super().get_config()
-        config.update(self._config)
-        return config
 
 
 if __name__ == "__main__":
