@@ -44,10 +44,8 @@ def build_split_TCN(
     Returns
     -------
     models : tuple (3, )
-        Three Keras Models representing:
-            * Full_TCN with prediction head (compiled with Adam optimizer)
-            * Prediction_head
-            * TCN only
+        Three Keras Models representing the Full TCN with prediction head, the
+        prediction head only and the TCN only.
     """
     tcn_layer = TCN(
         nb_filters=num_tcn_filters,
