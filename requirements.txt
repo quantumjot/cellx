@@ -1,0 +1,10 @@
+matplotlib
+numpy
+scikit-image
+scikit-learn
+scipy
+tensorflow
+tqdm
+dask
+#jax
+keras-tcn
