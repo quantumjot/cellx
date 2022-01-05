@@ -3,7 +3,17 @@ from typing import List, Optional, Union
 from tensorflow import keras as K
 
 
-class ConvBlockBase(K.layers.Layer):
+class SerializationMixin:
+    """Mixin to allow layer serialization by returning the layer config as
+    a dictionary."""
+
+    def get_config(self) -> dict:
+        config = super().get_config()
+        config.update(self._config)
+        return config
+
+
+class ConvBlockBase(K.layers.Layer, SerializationMixin):
     """Base class for convolutional blocks.
 
     Keras layer to perform a convolution with batch normalization followed
@@ -42,7 +52,11 @@ class ConvBlockBase(K.layers.Layer):
     ):
         super().__init__(**kwargs)
         self.conv = convolution(
-            filters, kernel_size, strides=strides, padding=padding, use_bias=False,
+            filters,
+            kernel_size,
+            strides=strides,
+            padding=padding,
+            use_bias=False,
         )
         self.norm = K.layers.BatchNormalization()
         self.activation = K.layers.Activation(activation)
@@ -63,13 +77,8 @@ class ConvBlockBase(K.layers.Layer):
         conv = self.norm(conv, training=training)
         return self.activation(conv)
 
-    def get_config(self) -> dict:
-        config = super().get_config()
-        config.update(self._config)
-        return config
 
-
-class EncoderDecoderBase(K.layers.Layer):
+class EncoderDecoderBase(K.layers.Layer, SerializationMixin):
     """Base class for encoders and decoders.
 
     Parameters
@@ -123,13 +132,8 @@ class EncoderDecoderBase(K.layers.Layer):
                 x = self.sampling(x)
         return x
 
-    def get_config(self) -> dict:
-        config = super().get_config()
-        config.update(self._config)
-        return config
 
-
-class ResidualBlockBase(K.layers.Layer):
+class ResidualBlockBase(K.layers.Layer, SerializationMixin):
     """Base class for residual blocks.
 
     Keras layer to perform a convolution with batch normalization followed
@@ -173,13 +177,25 @@ class ResidualBlockBase(K.layers.Layer):
 
         # convolutional layers
         self.conv_1 = convolution(
-            filters, kernel_size, strides=strides, padding=padding, use_bias=False,
+            filters,
+            kernel_size,
+            strides=strides,
+            padding=padding,
+            use_bias=False,
         )
         self.conv_2 = convolution(
-            filters, kernel_size, strides=1, padding=padding, use_bias=False,
+            filters,
+            kernel_size,
+            strides=1,
+            padding=padding,
+            use_bias=False,
         )
         self.conv_identity = convolution(
-            filters, kernel_size=1, strides=strides, padding=padding, use_bias=False,
+            filters,
+            kernel_size=1,
+            strides=strides,
+            padding=padding,
+            use_bias=False,
         )
 
         # batch normalization
@@ -227,11 +243,6 @@ class ResidualBlockBase(K.layers.Layer):
         conv = self.activation_2(conv)
 
         return conv
-
-    def get_config(self) -> dict:
-        config = super().get_config()
-        config.update(self._config)
-        return config
 
 
 if __name__ == "__main__":

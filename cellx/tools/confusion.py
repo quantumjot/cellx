@@ -11,7 +11,7 @@ def plot_confusion_matrix(
     errors: Optional[np.ndarray] = None,
     figsize: Tuple[int] = (8, 8),
     normalize: bool = True,
-):
+) -> plt.figure:
     """Creates a matplotlib figure containing the confusion matrix.
 
     Parameters
@@ -36,15 +36,6 @@ def plot_confusion_matrix(
     -----
     Modified from: https://www.tensorflow.org/tensorboard/image_summaries
     """
-
-    figure = plt.figure(figsize=figsize)
-    plt.imshow(cm, interpolation="nearest", cmap=plt.cm.Blues)
-    plt.title("Confusion matrix")
-    plt.colorbar()
-    tick_marks = np.arange(len(class_names))
-    plt.xticks(tick_marks, class_names, rotation=45)
-    plt.yticks(tick_marks, class_names)
-
     if cm.ndim != 2 or cm.shape[0] != cm.shape[1]:
         raise ValueError("Confusion matrix must be a 2D square array")
 
@@ -56,7 +47,6 @@ def plot_confusion_matrix(
     # normalize the confusion matrix
     if normalize:
         cm = np.around(cm.astype(np.float) / cm.sum(axis=1)[:, np.newaxis], decimals=2)
-        plt.clim([0, 1])
 
     if errors is not None:
         if errors.shape != cm.shape:
@@ -66,6 +56,16 @@ def plot_confusion_matrix(
         "horizontalalignment": "center",
         "verticalalignment": "center",
     }
+
+    figure = plt.figure(figsize=figsize)
+    plt.imshow(cm, interpolation="nearest", cmap=plt.cm.Blues)
+    if normalize:
+        plt.clim([0, 1])
+    plt.title("Confusion matrix")
+    plt.colorbar()
+    tick_marks = np.arange(len(class_names))
+    plt.xticks(tick_marks, class_names, rotation=45)
+    plt.yticks(tick_marks, class_names)
 
     # use white text if squares are dark; otherwise black
     threshold = cm.max() / 2.0

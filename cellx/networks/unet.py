@@ -24,7 +24,7 @@ class SkipConnection(CallableEnum):
 
 
 class UNet(K.Model):
-    """ UNet
+    """UNet
 
     A UNet class for image segmentation. This implementation differs in that we
     pad each convolution such that the output following convolution is the same

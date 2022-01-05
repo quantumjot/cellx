@@ -139,7 +139,7 @@ def augment_timeseries_noise(x: tf.Tensor, stddev_spread: float = 0.15) -> tf.Te
 def augment_timeseries_corrupt(
     x: tf.Tensor, n_corrupt: int = 10, stddev_spread: float = 0.15
 ) -> tf.Tensor:
-    """Corrupt some data from the timeseries by replacing with Gaussian oise.
+    """Corrupt some data from the timeseries by replacing with Gaussian noise.
 
     Parameters
     ----------

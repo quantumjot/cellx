@@ -1,4 +1,5 @@
 import io
+from typing import List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -58,10 +59,10 @@ def tensorboard_montage_callback(
 
 def tensorboard_confusion_matrix_callback(
     model: K.Model,
-    test_images: np.ndarray,
+    test_data: np.ndarray,
     test_labels: list,
     logdir: str,
-    class_names: list = [],
+    class_names: Optional[List[str]] = None,
     is_binary: bool = True,
 ) -> K.callbacks.LambdaCallback:
 
@@ -72,13 +73,13 @@ def tensorboard_confusion_matrix_callback(
     ----------
     model : Keras.Model
         The model.
-    test_images : np.ndarray
-        An array of images or volumes. First axis is batch.
+    test_data : np.ndarray
+        An array of data. First axis is batch.
     test_labels : list
         A list of labels, sparse categorical.
     logdir : str
         Path to the tensorboard log directory.
-    class_names : str
+    class_names : list[str]
         A list of the class names for each label.
     is_binary : bool
         Flag that determines whether the classification is binary or multiclass.
@@ -95,7 +96,7 @@ def tensorboard_confusion_matrix_callback(
 
     def log_confusion_matrix(epoch, logs):
         # Use the model to predict the values from the validation dataset.
-        test_pred_raw = model.predict(test_images)
+        test_pred_raw = model.predict(test_data)
         test_pred = test_pred_fn(test_pred_raw)
 
         # Calculate the confusion matrix.
