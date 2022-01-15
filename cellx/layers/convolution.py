@@ -40,6 +40,11 @@ class Encoder2D(base.EncoderDecoderBase):
         kwargs.update(extra_kwargs)
         super().__init__(**kwargs)
 
+    def get_config(self):
+        config = dict(super().get_config().copy())
+        config.update({"layers": self.layers})
+        return config
+
 
 class Encoder3D(base.EncoderDecoderBase):
     """Encoder3D."""
@@ -50,6 +55,11 @@ class Encoder3D(base.EncoderDecoderBase):
         extra_kwargs = {"convolution": convolution, "sampling": sampling}
         kwargs.update(extra_kwargs)
         super().__init__(**kwargs)
+
+    def get_config(self):
+        config = dict(super().get_config().copy())
+        config.update({"layers": self.layers})
+        return config
 
 
 class Encoder3DFlat(base.EncoderDecoderBase):
@@ -65,6 +75,11 @@ class Encoder3DFlat(base.EncoderDecoderBase):
         kwargs.update(extra_kwargs)
         super().__init__(**kwargs)
 
+    def get_config(self):
+        config = dict(super().get_config().copy())
+        config.update({"layers": self.layers})
+        return config
+
 
 class Decoder2D(base.EncoderDecoderBase):
     """Decoder2D."""
@@ -76,6 +91,11 @@ class Decoder2D(base.EncoderDecoderBase):
         kwargs.update(extra_kwargs)
         super().__init__(**kwargs)
 
+    def get_config(self):
+        config = dict(super().get_config().copy())
+        config.update({"layers": self.layers})
+        return config
+
 
 class Decoder3D(base.EncoderDecoderBase):
     """Decoder3D."""
@@ -86,6 +106,11 @@ class Decoder3D(base.EncoderDecoderBase):
         extra_kwargs = {"convolution": convolution, "sampling": sampling}
         kwargs.update(extra_kwargs)
         super().__init__(**kwargs)
+
+    def get_config(self):
+        config = dict(super().get_config().copy())
+        config.update({"layers": self.layers})
+        return config
 
 
 if __name__ == "__main__":

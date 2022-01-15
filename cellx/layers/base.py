@@ -107,6 +107,8 @@ class EncoderDecoderBase(K.layers.Layer, SerializationMixin):
     ):
         super().__init__(**kwargs)
 
+        self.layers = layers
+
         if sampling is not None:
             if not isinstance(sampling, K.layers.Layer):
                 self.sampling = sampling()
@@ -118,7 +120,7 @@ class EncoderDecoderBase(K.layers.Layer, SerializationMixin):
             strides = 2
 
         # build the convolutional layer list
-        self.layers = [convolution(filters=k, strides=strides) for k in layers]
+        self.conv_layers = [convolution(filters=k, strides=strides) for k in layers]
 
         self._config = {
             "layers": layers,
@@ -126,9 +128,9 @@ class EncoderDecoderBase(K.layers.Layer, SerializationMixin):
         self._config.update(kwargs)
 
     def call(self, x, training: Optional[bool] = None):
-        for layer in self.layers:
+        for layer in self.conv_layers:
             x = layer(x, training=training)
-            if layer != self.layers[-1]:
+            if layer != self.conv_layers[-1]:
                 x = self.sampling(x)
         return x
 
