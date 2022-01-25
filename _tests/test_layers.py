@@ -4,6 +4,8 @@ from sklearn.decomposition import PCA
 
 from cellx.layers import ConvBlock2D, ConvBlock3D, PCATransform, ResidualBlock2D
 
+LAYERS = [ConvBlock2D, ConvBlock3D, ResidualBlock2D]
+
 
 @pytest.mark.parametrize("ndim", [1, 2, 4, 8])
 def test_pca_transform(ndim: int):
@@ -17,8 +19,16 @@ def test_pca_transform(ndim: int):
     np.testing.assert_almost_equal(x_true, x_test, decimal=5)
 
 
-@pytest.mark.parametrize("layer", [ConvBlock2D, ConvBlock3D, ResidualBlock2D])
+@pytest.mark.parametrize("layer", LAYERS)
 def test_layer_instantiation(layer):
     """Test instantiating network layers."""
     new_layer = layer()
     assert isinstance(new_layer, layer)
+
+
+@pytest.mark.parametrize("layer", LAYERS)
+def test_layer_serialization(layer):
+    """Test `get_config()` method derived from `SerializationMixin`."""
+    new_layer = layer()
+    config = new_layer.get_config()
+    assert isinstance(config, dict)
