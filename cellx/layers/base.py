@@ -13,7 +13,7 @@ class SerializationMixin:
         return config
 
 
-class ConvBlockBase(K.layers.Layer, SerializationMixin):
+class ConvBlockBase(K.layers.Layer):
     """Base class for convolutional blocks.
 
     Keras layer to perform a convolution with batch normalization followed
@@ -50,7 +50,7 @@ class ConvBlockBase(K.layers.Layer, SerializationMixin):
         activation: str = "swish",
         **kwargs
     ):
-        super(SerializationMixin, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.conv = convolution(
             filters,
             kernel_size,

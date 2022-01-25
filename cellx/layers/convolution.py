@@ -3,7 +3,7 @@ from tensorflow import keras as K
 from . import base
 
 
-class ConvBlock2D(base.ConvBlockBase):
+class ConvBlock2D(base.ConvBlockBase, base.SerializationMixin):
     """ConvBlock2D."""
 
     def __init__(self, convolution=K.layers.Conv2D, **kwargs):
