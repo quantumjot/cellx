@@ -32,3 +32,14 @@ def test_layer_serialization(layer):
     new_layer = layer()
     config = new_layer.get_config()
     assert isinstance(config, dict)
+
+
+@pytest.mark.parametrize("layer", LAYERS)
+@pytest.mark.parametrize("filters", 8, 16, 64)
+def test_layer_serialization_dict(layer, filters):
+    """Test `get_config()` method derived from `SerializationMixin` returns the
+    value used to initialize the layer."""
+    new_layer = layer(filters=filters)
+    config = new_layer.get_config()
+    assert "filters" in config.keys()
+    assert config["filters"] == filters
