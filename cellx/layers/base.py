@@ -50,7 +50,7 @@ class ConvBlockBase(K.layers.Layer, SerializationMixin):
         activation: str = "swish",
         **kwargs
     ):
-        super().__init__(**kwargs)
+        super(SerializationMixin, self).__init__(**kwargs)
         self.conv = convolution(
             filters,
             kernel_size,
