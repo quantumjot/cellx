@@ -3,13 +3,13 @@ from tensorflow import keras as K
 from . import base
 
 
-class ConvBlock2D(base.ConvBlockBase, base.SerializationMixin):
+class ConvBlock2D(base.ConvBlockBase):
     """ConvBlock2D."""
 
     def __init__(self, convolution=K.layers.Conv2D, **kwargs):
         extra_kwargs = {"convolution": convolution}
         kwargs.update(extra_kwargs)
-        super(base.SerializationMixin, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class ConvBlock3D(base.ConvBlockBase):
