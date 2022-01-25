@@ -7,7 +7,7 @@ from tensorflow import keras as K
 from .base import SerializationMixin
 
 
-class PCATransform(K.layers.Layer, SerializationMixin):
+class PCATransform(SerializationMixin, K.layers.Layer):
     """Simple PCA Transform in Keras.
 
     Parameters

@@ -15,7 +15,7 @@ class RandomNormalSampler(K.layers.Layer):
         return z_mean + tf.exp(0.5 * z_log_var) * epsilon
 
 
-class VAESampler(K.layers.Layer, SerializationMixin):
+class VAESampler(SerializationMixin, K.layers.Layer):
     """VAE Sampler.
 
     Parameters
