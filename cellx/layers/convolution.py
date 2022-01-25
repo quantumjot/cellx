@@ -9,7 +9,7 @@ class ConvBlock2D(base.ConvBlockBase, base.SerializationMixin):
     def __init__(self, convolution=K.layers.Conv2D, **kwargs):
         extra_kwargs = {"convolution": convolution}
         kwargs.update(extra_kwargs)
-        super().__init__(**kwargs)
+        super(base.SerializationMixin, self).__init__(**kwargs)
 
 
 class ConvBlock3D(base.ConvBlockBase):
