@@ -3,9 +3,9 @@ import pytest
 import tensorflow.keras as K
 
 from cellx import load_model
-from cellx.layers import ConvBlock2D, ConvBlock3D, ResidualBlock2D
+from cellx.layers import ConvBlock2D, ResidualBlock2D
 
-LAYERS = [ConvBlock2D, ConvBlock3D, ResidualBlock2D]
+LAYERS = [ConvBlock2D, ResidualBlock2D]
 
 
 @pytest.mark.parametrize("layer", LAYERS)
@@ -41,8 +41,7 @@ def test_model_serialization(tmp_path, layer):
         assert type(layer_i) == type(layer_j)
 
         # test that the serialized model weights are the same
-        for weights_i, weights_j in zip(
-            layer_i.weights.numpy(), layer_j.weights.numpy()
-        ):
-            np.testing.assert_equal(weights_i.shape, weights_j.shape)
-            np.testing.assert_equal(weights_i, weights_j)
+        for weights_i, weights_j in zip(layer_i.weights, layer_j.weights):
+            w_i, w_j = weights_i.numpy(), weights_j.numpy()
+            np.testing.assert_equal(w_i.shape, w_j.shape)
+            np.testing.assert_equal(w_i, w_j)
