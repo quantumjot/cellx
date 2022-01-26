@@ -3,8 +3,9 @@ import pytest
 import tensorflow.keras as K
 
 from cellx import load_model
+from cellx.layers import ConvBlock2D, ConvBlock3D, ResidualBlock2D
 
-from .test_layers import LAYERS
+LAYERS = [ConvBlock2D, ConvBlock3D, ResidualBlock2D]
 
 
 @pytest.mark.parametrize("layer", LAYERS)
