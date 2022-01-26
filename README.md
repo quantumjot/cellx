@@ -1,3 +1,6 @@
+[![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Tests](https://github.com/quantumjot/cellx/actions/workflows/cellx.yml/badge.svg)](quantumjot/cellx/actions)
+
 # CellX
 
 Code for CellX and related projects.
