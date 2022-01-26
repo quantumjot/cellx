@@ -7,7 +7,7 @@ from tensorflow import keras as K
 from ..layers import SerializationMixin, VAESampler
 
 
-class VAEReshapeLatents(K.layers.Layer, SerializationMixin):
+class VAEReshapeLatents(SerializationMixin, K.layers.Layer):
     """VAE latent reshaper.
 
     Parameters

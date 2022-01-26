@@ -13,7 +13,7 @@ class SerializationMixin:
         return config
 
 
-class ConvBlockBase(K.layers.Layer, SerializationMixin):
+class ConvBlockBase(SerializationMixin, K.layers.Layer):
     """Base class for convolutional blocks.
 
     Keras layer to perform a convolution with batch normalization followed
@@ -78,7 +78,7 @@ class ConvBlockBase(K.layers.Layer, SerializationMixin):
         return self.activation(conv)
 
 
-class EncoderDecoderBase(K.layers.Layer, SerializationMixin):
+class EncoderDecoderBase(SerializationMixin, K.layers.Layer):
     """Base class for encoders and decoders.
 
     Parameters
@@ -133,7 +133,7 @@ class EncoderDecoderBase(K.layers.Layer, SerializationMixin):
         return x
 
 
-class ResidualBlockBase(K.layers.Layer, SerializationMixin):
+class ResidualBlockBase(SerializationMixin, K.layers.Layer):
     """Base class for residual blocks.
 
     Keras layer to perform a convolution with batch normalization followed
