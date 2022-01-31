@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from tensorflow import keras as K
 
-from ..layers import ConvBlock2D
+from ..layers import ConvBlock2D, SerializationMixin
 from ..utils import CallableEnum
 
 
@@ -23,7 +23,7 @@ class SkipConnection(CallableEnum):
     NONE = partial(lambda x: x[0])
 
 
-class UNet(K.Model):
+class UNet(SerializationMixin, K.Model):
     """UNet
 
     A UNet class for image segmentation. This implementation differs in that we
@@ -109,6 +109,18 @@ class UNet(K.Model):
         # TODO(arl): if using a transpose convolution, we need to set the number of filters
         self._downsamplers = [downsampling() for i in range(len(layers) - 1)]
         self._upsamplers = [upsampling() for i in range(len(layers) - 1)]
+
+        # save the config
+        self._config = {
+            "convolution": convolution,
+            "downsampling": downsampling,
+            "upsampling": upsampling,
+            "layers": layers,
+            "output_filters": output_filters,
+            "skip": skip,
+            "name": name,
+        }
+        self._config.update(kwargs)
 
     def call(self, x, training: Optional[bool] = None):
         # build the encoder arm
