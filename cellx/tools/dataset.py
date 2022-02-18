@@ -160,3 +160,45 @@ def build_dataset(files: Union[List[os.PathLike], os.PathLike], **kwargs):
     dataset = tf.data.TFRecordDataset(files)
     dataset = dataset.map(lambda x: parse_tfrecord(x, **kwargs), num_parallel_calls=8)
     return dataset
+
+
+def count_images_in_dataset(files: Union[List[os.PathLike], os.PathLike]):
+    """Parse a TF Dataset by file to count the number of images it contains.
+
+    Parameters
+    ----------
+    files : str, list[str]
+        The list of TFRecord files to use for the dataset.
+
+    Returns
+    -------
+    num_images : int
+        The number of images in the TF dataset.
+    """
+
+    dataset = build_dataset(files)
+    num_images = 0
+    for record in dataset:
+        num_images += 1
+    return num_images
+
+
+def convert_dataset_images_to_numpy(files: Union[List[os.PathLike], os.PathLike]):
+    """Parse a TF Dataset by file, extract the TFRecord image tensors,
+    convert them to numpy for inspection & return as generator.
+
+    Parameters
+    ----------
+    files : str, list[str]
+        The list of TFRecord files to use for the dataset.
+
+    Returns
+    -------
+    image : np.ndarray
+        The np.ndarray stack of image arrays in the TF dataset.
+    """
+
+    dataset = build_dataset(files)
+    image_stack = [record.numpy() for record in dataset]
+    image_stack = np.stack(image_stack, axis=0)
+    return image_stack
