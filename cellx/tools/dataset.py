@@ -194,7 +194,7 @@ def convert_dataset_images_to_numpy(files: Union[List[os.PathLike], os.PathLike]
 
     Returns
     -------
-    image : np.ndarray
+    image_stack : np.ndarray
         The np.ndarray stack of image arrays in the TF dataset.
     """
 
