@@ -136,6 +136,18 @@ def per_channel_normalize(x: tf.Tensor) -> tf.Tensor:
     return x
 
 
+def list_tfrecord_files(
+    files: Union[List[os.PathLike], os.PathLike],
+) -> List[os.PathLike]:
+    """Parse the input into the list of files ending with '.tfrecord'."""
+    if not isinstance(files, list):
+        fn, ext = os.path.splitext(files)
+        if ext != "tfrecord":
+            pth = Path(files)
+            files = [pth / f for f in os.listdir(files) if f.endswith(".tfrecord")]
+    return files
+
+
 def build_dataset(files: Union[List[os.PathLike], os.PathLike], **kwargs):
     """Build a TF Dataset from a list of TFRecordFiles. Map the parser to it.
 
@@ -150,14 +162,8 @@ def build_dataset(files: Union[List[os.PathLike], os.PathLike], **kwargs):
         The TF dataset.
     """
 
-    # parse the input
-    if not isinstance(files, list):
-        fn, ext = os.path.splitext(files)
-        if ext != "tfrecord":
-            pth = Path(files)
-            files = [pth / f for f in os.listdir(files) if f.endswith(".tfrecord")]
-
-    dataset = tf.data.TFRecordDataset(files)
+    tfrecordfiles = list_tfrecord_files(files)
+    dataset = tf.data.TFRecordDataset(tfrecordfiles)
     dataset = dataset.map(lambda x: parse_tfrecord(x, **kwargs), num_parallel_calls=8)
     return dataset
 
@@ -178,18 +184,19 @@ def count_images_in_dataset(
         The number of images in the TF dataset.
     """
 
-    dataset = build_dataset(files)
+    tfrecordfiles = list_tfrecord_files(files)
+    dataset = tf.data.TFRecordDataset(tfrecordfiles)
     num_images = 0
     for record in dataset:
         num_images += 1
     return num_images
 
 
-def convert_dataset_images_to_numpy(
+def read_numpy_arrays_from_tfrecord_dataset(
     files: Union[List[os.PathLike], os.PathLike],
 ) -> np.ndarray:
-    """Parse a TF Dataset by file, extract the TFRecord image tensors,
-    convert them to numpy for inspection & return as generator.
+    """Create a TF Dataset, extract the images as TFRecord tensors,
+    convert them to numpy arrays & return as np.ndarray stack.
 
     Parameters
     ----------
@@ -198,7 +205,7 @@ def convert_dataset_images_to_numpy(
 
     Returns
     -------
-    image_stack : np.ndarray
+    image_stack : np.ndarray:
         The np.ndarray stack of image arrays in the TF dataset.
     """
 
