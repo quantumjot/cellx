@@ -136,6 +136,18 @@ def per_channel_normalize(x: tf.Tensor) -> tf.Tensor:
     return x
 
 
+def list_tfrecord_files(
+    files: Union[List[os.PathLike], os.PathLike],
+) -> List[os.PathLike]:
+    """Parse the input into the list of files ending with '.tfrecord'."""
+    if not isinstance(files, list):
+        fn, ext = os.path.splitext(files)
+        if ext != "tfrecord":
+            pth = Path(files)
+            files = [pth / f for f in os.listdir(files) if f.endswith(".tfrecord")]
+    return files
+
+
 def build_dataset(files: Union[List[os.PathLike], os.PathLike], **kwargs):
     """Build a TF Dataset from a list of TFRecordFiles. Map the parser to it.
 
@@ -150,13 +162,54 @@ def build_dataset(files: Union[List[os.PathLike], os.PathLike], **kwargs):
         The TF dataset.
     """
 
-    # parse the input
-    if not isinstance(files, list):
-        fn, ext = os.path.splitext(files)
-        if ext != "tfrecord":
-            pth = Path(files)
-            files = [pth / f for f in os.listdir(files) if f.endswith(".tfrecord")]
-
-    dataset = tf.data.TFRecordDataset(files)
+    tfrecordfiles = list_tfrecord_files(files)
+    dataset = tf.data.TFRecordDataset(tfrecordfiles)
     dataset = dataset.map(lambda x: parse_tfrecord(x, **kwargs), num_parallel_calls=8)
     return dataset
+
+
+def count_images_in_dataset(
+    files: Union[List[os.PathLike], os.PathLike],
+) -> int:
+    """Parse a TF Dataset by file to count the number of images it contains.
+
+    Parameters
+    ----------
+    files : str, list[str]
+        The list of TFRecord files to use for the dataset.
+
+    Returns
+    -------
+    num_images : int
+        The number of images in the TF dataset.
+    """
+
+    tfrecordfiles = list_tfrecord_files(files)
+    dataset = tf.data.TFRecordDataset(tfrecordfiles)
+    num_images = 0
+    for record in dataset:
+        num_images += 1
+    return num_images
+
+
+def read_numpy_arrays_from_tfrecord_dataset(
+    files: Union[List[os.PathLike], os.PathLike],
+) -> np.ndarray:
+    """Create a TF Dataset, extract the images as TFRecord tensors,
+    convert them to numpy arrays & return as np.ndarray stack.
+
+    Parameters
+    ----------
+    files : str, list[str]
+        The list of TFRecord files to use for the dataset.
+
+    Returns
+    -------
+    image_stack : np.ndarray:
+        The np.ndarray stack of image arrays in the TF dataset.
+    """
+
+    dataset = build_dataset(files)
+    image_stack = [record.numpy() for record in dataset]
+    image_stack = np.stack(image_stack, axis=0)
+    return image_stack
