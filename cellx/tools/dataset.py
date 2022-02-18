@@ -162,7 +162,9 @@ def build_dataset(files: Union[List[os.PathLike], os.PathLike], **kwargs):
     return dataset
 
 
-def count_images_in_dataset(files: Union[List[os.PathLike], os.PathLike]):
+def count_images_in_dataset(
+    files: Union[List[os.PathLike], os.PathLike],
+) -> int:
     """Parse a TF Dataset by file to count the number of images it contains.
 
     Parameters
@@ -183,7 +185,9 @@ def count_images_in_dataset(files: Union[List[os.PathLike], os.PathLike]):
     return num_images
 
 
-def convert_dataset_images_to_numpy(files: Union[List[os.PathLike], os.PathLike]):
+def convert_dataset_images_to_numpy(
+    files: Union[List[os.PathLike], os.PathLike],
+) -> np.ndarray:
     """Parse a TF Dataset by file, extract the TFRecord image tensors,
     convert them to numpy for inspection & return as generator.
 
