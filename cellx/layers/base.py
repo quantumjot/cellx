@@ -8,9 +8,16 @@ class SerializationMixin:
     a dictionary."""
 
     def get_config(self) -> dict:
-        config = super().get_config()
+        try:
+            config = super().get_config()
+        except NotImplementedError:
+            config = {}
         config.update(self._config)
         return config
+
+    @classmethod
+    def from_config(cls, config: dict):
+        return cls(**config)
 
 
 class ConvBlockBase(SerializationMixin, K.layers.Layer):
@@ -121,6 +128,8 @@ class EncoderDecoderBase(SerializationMixin, K.layers.Layer):
         self.layers = [convolution(filters=k, strides=strides) for k in layers]
 
         self._config = {
+            "convolution": convolution,
+            "sampling": sampling,
             "layers": layers,
         }
         self._config.update(kwargs)
