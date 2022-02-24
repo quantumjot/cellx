@@ -52,7 +52,7 @@ def write_dataset(
 
         for idx, data in enumerate(images):
             feature = {
-                "train/image": _bytes_feature(data.tostring()),
+                "train/image": _bytes_feature(data.tobytes()),
                 "train/width": _int64_feature(data.shape[1]),
                 "train/height": _int64_feature(data.shape[0]),
                 "train/channels": _int64_feature(data.shape[-1]),
@@ -111,11 +111,7 @@ def parse_tfrecord(
     )
 
     # convert the image data from string back to the numbers
-    if output_dtype == "uint16":
-        dtype = tf.uint16
-    else:
-        dtype = tf.uint8
-
+    dtype = getattr(tf.dtypes, output_dtype)
     image_raw = tf.io.decode_raw(features["train/image"], dtype)
 
     # get the image dimensions
