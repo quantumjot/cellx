@@ -72,6 +72,7 @@ def write_dataset(
 def parse_tfrecord(
     serialized_example,
     output_shape: Optional[tuple] = None,
+    output_dtype: str = "uint8",
     read_label: bool = False,
     read_weights: bool = False,
 ):
@@ -84,6 +85,8 @@ def parse_tfrecord(
     output_shape : tuple, None
         Optional parameter to non-dynamically define output shape. If none, the
         shape is determined from the dimensions stored in the TFRecord.
+    output_dtype : str, default = 'uint8'
+        The output data type for parsing the data.
     read_label : bool
         Read a label encoded in the file.
     read_weights : bool
@@ -108,7 +111,12 @@ def parse_tfrecord(
     )
 
     # convert the image data from string back to the numbers
-    image_raw = tf.io.decode_raw(features["train/image"], tf.uint8)
+    if output_dtype == "uint16":
+        dtype = tf.uint16
+    else:
+        dtype = tf.uint8
+
+    image_raw = tf.io.decode_raw(features["train/image"], dtype)
 
     # get the image dimensions
     if output_shape is None:
