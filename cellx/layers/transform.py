@@ -23,6 +23,8 @@ class PCATransform(SerializationMixin, K.layers.Layer):
     -----
     Assumes that the number of principal components is the same as the number of
     input features, i.e. that the components matrix is square.
+
+    Also note that this function expects the data to be of the format: (batch, samples, features)
     """
 
     def __init__(self, components: np.ndarray, mean: np.ndarray, **kwargs):
