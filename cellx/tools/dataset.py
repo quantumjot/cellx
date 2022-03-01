@@ -22,7 +22,9 @@ def _float_feature(value):
 
 
 def write_dataset(
-    filename: str, images: np.ndarray, labels: Optional[np.ndarray] = None
+    filename: Union[str, os.PathLike],
+    images: np.ndarray,
+    labels: Optional[np.ndarray] = None,
 ):
     """Write out a TF record of image data for training models.
 
@@ -36,8 +38,11 @@ def write_dataset(
         An array of labels.
     """
 
-    if not filename.endswith(".tfrecord"):
-        filename = f"{filename}.tfrecord"
+    # convert to a Path, although TF likes a string as input
+    filename = Path(filename)
+    if filename.suffix != ".tfrecord":
+        filename = filename.with_suffix(".tfrecord")
+    filename = str(filename)
 
     assert images.dtype in (
         np.uint8,
@@ -143,12 +148,25 @@ def per_channel_normalize(x: tf.Tensor) -> tf.Tensor:
 def list_tfrecord_files(
     files: Union[List[os.PathLike], os.PathLike],
 ) -> List[os.PathLike]:
-    """Parse the input into the list of files ending with '.tfrecord'."""
+    """Parse the input into the list of files ending with '.tfrecord'.
+
+    Parameters
+    ----------
+    files : List[os.PathLike] or os.PathLike
+        Parse a list or single pathlike objects
+
+    Returns
+    -------
+    files : List[os.PathLike]
+        A TF compatible list of paths to `.tfrecord` files.
+
+    """
     if not isinstance(files, list):
-        fn, ext = os.path.splitext(files)
-        if ext != "tfrecord":
-            pth = Path(files)
-            files = [pth / f for f in os.listdir(files) if f.endswith(".tfrecord")]
+        files = Path(files)
+        if files.is_dir():
+            files = [f for f in files.iterdir() if f.suffix == ".tfrecord"]
+        else:
+            files = [files]
     return files
 
 
