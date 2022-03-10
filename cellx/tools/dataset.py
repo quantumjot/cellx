@@ -167,6 +167,8 @@ def list_tfrecord_files(
             files = [f for f in files.iterdir() if f.suffix == ".tfrecord"]
         else:
             files = [files]
+    # convert PosixPath objects to strings to prevent errors in some TF versions
+    files = [str(f) for f in files]
     return files
 
 
