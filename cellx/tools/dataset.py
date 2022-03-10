@@ -147,17 +147,17 @@ def per_channel_normalize(x: tf.Tensor) -> tf.Tensor:
 
 def list_tfrecord_files(
     files: Union[List[os.PathLike], os.PathLike],
-) -> List[os.PathLike]:
+) -> List[str]:
     """Parse the input into the list of files ending with '.tfrecord'.
 
     Parameters
     ----------
-    files : List[os.PathLike] or os.PathLike
-        Parse a list or single pathlike objects
+    files : list[os.PathLike] or os.PathLike
+        Parse a list or single pathlike objects.
 
     Returns
     -------
-    files : List[os.PathLike]
+    files : list[str]
         A TF compatible list of paths to `.tfrecord` files.
 
     """
@@ -172,12 +172,12 @@ def list_tfrecord_files(
     return files
 
 
-def build_dataset(files: Union[List[os.PathLike], os.PathLike], **kwargs):
+def build_dataset(files: List[str], **kwargs):
     """Build a TF Dataset from a list of TFRecordFiles. Map the parser to it.
 
     Parameters
     ----------
-    files : str, list[str]
+    files : list[str]
         The list of TFRecord files to use for the dataset.
 
     Returns
