@@ -55,7 +55,7 @@ def test_read_write_dataset_dtype(tmp_path, dtype):
 def test_list_tfrecords(tmp_path):
     """Check that list_tfrecords returns a list of tfrecord files when using
     different inputs, e.g. single file, folder or list."""
-    filename = Path(tmp_path) / "test.tfrecord"
+    filename = str(Path(tmp_path) / "test.tfrecord")
     _ = _test_write_images(filename)
 
     # single path to file
