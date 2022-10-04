@@ -7,15 +7,58 @@ from cellx.layers import ConvBlock2D, ConvBlock3D, PCATransform, ResidualBlock2D
 LAYERS = [ConvBlock2D, ConvBlock3D, ResidualBlock2D]
 
 
+def _multivariate_normal(nsamples: int = 100, ndim: int = 2):
+    """Create a multivariate normal distribution with randomized covariance and
+    mean to test `PCATransform` layer."""
+    rng = np.random.default_rng()
+    mu = rng.normal(size=(ndim,)) * 5.0
+    cov = np.ones((ndim, ndim)) * rng.uniform() + np.eye(ndim) * rng.uniform() * 5.0
+    return rng.multivariate_normal(mu, cov, size=(nsamples,))
+
+
 @pytest.mark.parametrize("ndim", [1, 2, 4, 8])
 def test_pca_transform(ndim: int):
     """Check that the PCA transform layer produces the same results as
-    scikit-learn."""
-    data = (np.random.randn(100, ndim) * 1.0 + 5.0).astype(np.float32)
+    `scikit-learn`."""
+    # data = (np.random.randn(100, ndim) * 1.0 + 5.0).astype(np.float32)
+    data = _multivariate_normal(ndim=ndim).astype(np.float32)
     pca = PCA(n_components=ndim)
     x_true = pca.fit_transform(data)
     layer = PCATransform(pca.components_.T, pca.mean_)
     x_test = layer(data[np.newaxis, ...])[0, ...]
+    np.testing.assert_almost_equal(x_true, x_test, decimal=5)
+
+
+@pytest.mark.parametrize("ndim", [1, 2, 4, 8])
+@pytest.mark.parametrize("batch_size", [1, 8, 32])
+def test_pca_batch(ndim: int, batch_size: int):
+    """Test a batch PCA transform."""
+    raw = _multivariate_normal(ndim=ndim).astype(np.float32)
+    pca = PCA(n_components=ndim)
+    pca.fit(raw)
+
+    # set up the keras PCATransform layer
+    layer = PCATransform(pca.components_.T, pca.mean_)
+
+    # create a batch of data to transform (batch_size, 100, ndim)
+    data = np.stack(
+        [_multivariate_normal(ndim=ndim) for _ in range(batch_size)],
+        axis=0,
+    ).astype(np.float32)
+
+    # iterate over each batch and transform using `scikit-learn`
+    x_true = []
+    for i in range(batch_size):
+        batch = data[i, ...]
+        x_true.append(pca.transform(batch))
+
+    x_true = np.stack(x_true, axis=0)
+
+    # perform the PCA transform as a batch operation
+    x_test = layer(data)
+
+    # make sure we have the correct shape and that the data match
+    assert x_true.shape == x_test.shape
     np.testing.assert_almost_equal(x_true, x_test, decimal=5)
 
 
