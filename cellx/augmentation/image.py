@@ -67,7 +67,7 @@ def augment_random_flip(x: tf.Tensor) -> tf.Tensor:
 
 
 @augmentation_label_handler
-def augment_random_noise(x: tf.Tensor) -> tf.Tensor:
+def augment_random_noise(x: tf.Tensor, stddev: float = 0.5) -> tf.Tensor:
     """Perform a noise addition augmentation.
 
     Parameters
@@ -80,7 +80,6 @@ def augment_random_noise(x: tf.Tensor) -> tf.Tensor:
     x : tf.Tensor
         The augmented tensor.
     """
-    stddev = tf.math.reduce_std(x) / 2
     x_add = tf.random.normal(shape=tf.shape(x), stddev=stddev)
     x = tf.add(x, x_add)
     return x
