@@ -4,6 +4,7 @@ scikit-image
 scikit-learn
 scipy
 tensorflow
+tensorflow-addons
 tqdm
 dask
 #jax
