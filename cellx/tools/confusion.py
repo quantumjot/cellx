@@ -46,11 +46,15 @@ def plot_confusion_matrix(
 
     # normalize the confusion matrix
     if normalize:
-        cm = np.around(cm.astype(np.float) / cm.sum(axis=1)[:, np.newaxis], decimals=2)
+        cm = np.around(
+            cm.astype("float") / cm.sum(axis=1)[:, np.newaxis], decimals=2
+        )
 
     if errors is not None:
         if errors.shape != cm.shape:
-            raise ValueError("Error shape does not match confusion matrix shape")
+            raise ValueError(
+                "Error shape does not match confusion matrix shape"
+            )
 
     txt_params = {
         "horizontalalignment": "center",
