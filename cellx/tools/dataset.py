@@ -22,7 +22,9 @@ def _float_feature(value):
 
 
 def write_dataset(
-    filename: str, images: np.ndarray, labels: Optional[np.ndarray] = None
+    filename: Union[str, os.PathLike],
+    images: np.ndarray,
+    labels: Optional[np.ndarray] = None,
 ):
     """Write out a TF record of image data for training models.
 
@@ -36,8 +38,11 @@ def write_dataset(
         An array of labels.
     """
 
-    if not filename.endswith(".tfrecord"):
-        filename = f"{filename}.tfrecord"
+    # convert to a Path, although TF likes a string as input
+    filename = Path(filename)
+    if filename.suffix != ".tfrecord":
+        filename = filename.with_suffix(".tfrecord")
+    filename = str(filename)
 
     assert images.dtype in (
         np.uint8,
@@ -52,7 +57,7 @@ def write_dataset(
 
         for idx, data in enumerate(images):
             feature = {
-                "train/image": _bytes_feature(data.tostring()),
+                "train/image": _bytes_feature(data.tobytes()),
                 "train/width": _int64_feature(data.shape[1]),
                 "train/height": _int64_feature(data.shape[0]),
                 "train/channels": _int64_feature(data.shape[-1]),
@@ -72,6 +77,7 @@ def write_dataset(
 def parse_tfrecord(
     serialized_example,
     output_shape: Optional[tuple] = None,
+    output_dtype: str = "uint8",
     read_label: bool = False,
     read_weights: bool = False,
 ):
@@ -84,6 +90,8 @@ def parse_tfrecord(
     output_shape : tuple, None
         Optional parameter to non-dynamically define output shape. If none, the
         shape is determined from the dimensions stored in the TFRecord.
+    output_dtype : str, default = 'uint8'
+        The output data type for parsing the data.
     read_label : bool
         Read a label encoded in the file.
     read_weights : bool
@@ -108,7 +116,8 @@ def parse_tfrecord(
     )
 
     # convert the image data from string back to the numbers
-    image_raw = tf.io.decode_raw(features["train/image"], tf.uint8)
+    dtype = getattr(tf.dtypes, output_dtype)
+    image_raw = tf.io.decode_raw(features["train/image"], dtype)
 
     # get the image dimensions
     if output_shape is None:
@@ -136,12 +145,39 @@ def per_channel_normalize(x: tf.Tensor) -> tf.Tensor:
     return x
 
 
-def build_dataset(files: Union[List[os.PathLike], os.PathLike], **kwargs):
+def list_tfrecord_files(
+    files: Union[List[os.PathLike], os.PathLike],
+) -> List[str]:
+    """Parse the input into the list of files ending with '.tfrecord'.
+
+    Parameters
+    ----------
+    files : list[os.PathLike] or os.PathLike
+        Parse a list or single pathlike objects.
+
+    Returns
+    -------
+    files : list[str]
+        A TF compatible list of paths to `.tfrecord` files.
+
+    """
+    if not isinstance(files, list):
+        files = Path(files)
+        if files.is_dir():
+            files = [f for f in files.iterdir() if f.suffix == ".tfrecord"]
+        else:
+            files = [files]
+    # convert PosixPath objects to strings to prevent errors in some TF versions
+    files = [str(f) for f in files]
+    return files
+
+
+def build_dataset(files: List[str], **kwargs):
     """Build a TF Dataset from a list of TFRecordFiles. Map the parser to it.
 
     Parameters
     ----------
-    files : str, list[str]
+    files : list[str]
         The list of TFRecord files to use for the dataset.
 
     Returns
@@ -150,13 +186,54 @@ def build_dataset(files: Union[List[os.PathLike], os.PathLike], **kwargs):
         The TF dataset.
     """
 
-    # parse the input
-    if not isinstance(files, list):
-        fn, ext = os.path.splitext(files)
-        if ext != "tfrecord":
-            pth = Path(files)
-            files = [pth / f for f in os.listdir(files) if f.endswith(".tfrecord")]
-
-    dataset = tf.data.TFRecordDataset(files)
+    tfrecordfiles = list_tfrecord_files(files)
+    dataset = tf.data.TFRecordDataset(tfrecordfiles)
     dataset = dataset.map(lambda x: parse_tfrecord(x, **kwargs), num_parallel_calls=8)
     return dataset
+
+
+def count_images_in_dataset(
+    files: Union[List[os.PathLike], os.PathLike],
+) -> int:
+    """Parse a TF Dataset by file to count the number of images it contains.
+
+    Parameters
+    ----------
+    files : str, list[str]
+        The list of TFRecord files to use for the dataset.
+
+    Returns
+    -------
+    num_images : int
+        The number of images in the TF dataset.
+    """
+
+    tfrecordfiles = list_tfrecord_files(files)
+    dataset = tf.data.TFRecordDataset(tfrecordfiles)
+    num_images = 0
+    for record in dataset:
+        num_images += 1
+    return num_images
+
+
+def read_numpy_arrays_from_tfrecord_dataset(
+    files: Union[List[os.PathLike], os.PathLike],
+) -> np.ndarray:
+    """Create a TF Dataset, extract the images as TFRecord tensors,
+    convert them to numpy arrays & return as np.ndarray stack.
+
+    Parameters
+    ----------
+    files : str, list[str]
+        The list of TFRecord files to use for the dataset.
+
+    Returns
+    -------
+    image_stack : np.ndarray:
+        The np.ndarray stack of image arrays in the TF dataset.
+    """
+
+    dataset = build_dataset(files)
+    image_stack = [record.numpy() for record in dataset]
+    image_stack = np.stack(image_stack, axis=0)
+    return image_stack
