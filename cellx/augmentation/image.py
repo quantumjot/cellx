@@ -5,10 +5,33 @@ import tensorflow_addons as tfa
 from .utils import augmentation_label_handler
 
 
+def _form_vignette(x: tf.Tensor, k: int, crop_fraction: float):
+    axis = k % 2
+    width = tf.cast(
+        crop_fraction * tf.cast(tf.shape(x)[axis], tf.float32), tf.int32
+    )
+    residue_shape = tf.gather(tf.shape(x), [1 + (axis % -2), 2])
+    vignette = tf.concat(
+        [
+            tf.zeros(tf.concat([[width], residue_shape], axis=0)),
+            tf.ones(
+                tf.concat([[tf.shape(x)[axis] - width], residue_shape], axis=0)
+            ),
+        ],
+        axis=0,
+    )
+    vignette = tf.image.rot90(vignette, k=k)
+    return vignette
+
+
 @augmentation_label_handler
-def augment_random_boundary(x: tf.Tensor) -> tf.Tensor:
+def augment_random_boundary(
+    x: tf.Tensor, max_crop_fraction: float = 0.5
+) -> tf.Tensor:
     """Perform a random cropping type augmentation to simulate the edge of a
     field of view.
+
+    Applies cropping operation independently to each image in the stack.
 
     Parameters
     ----------
@@ -20,11 +43,18 @@ def augment_random_boundary(x: tf.Tensor) -> tf.Tensor:
     x : tf.Tensor
         The augmented tensor.
     """
-
-    vignette = np.ones(x.shape, dtype=np.float32)
-    width = np.random.randint(0, x.shape[1] // 2)
-    vignette[:, :width, ...] = 0
-    x = tf.multiply(x, vignette)
+    crop_fractions = tf.random.uniform(
+        shape=[tf.shape(x)[0]], maxval=max_crop_fraction, dtype=tf.float32
+    )
+    rotations = tf.random.uniform(
+        shape=[tf.shape(x)[0]], maxval=4, dtype=tf.int32
+    )
+    vignettes = tf.map_fn(
+        lambda i: _form_vignette(i[0], i[1], i[2]),
+        (x, rotations, crop_fractions),
+        fn_output_signature=tf.float32,
+    )
+    x = tf.multiply(x, vignettes)
     return x
 
 
