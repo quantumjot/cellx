@@ -23,7 +23,7 @@ class SkipConnection(CallableEnum):
     NONE = partial(lambda x: x[0])
 
 
-class UNet(SerializationMixin, K.Model):
+class UNet(SerializationMixin, K.layers.Layer):
     """UNet
 
     A UNet class for image segmentation. This implementation differs in that we
@@ -86,11 +86,14 @@ class UNet(SerializationMixin, K.Model):
         if skip.upper() not in SkipConnection._member_names_:
             raise ValueError(f"Skip connection {skip} not recognized.")
 
-        self._skips = [K.layers.Concatenate(axis=-1) for i in range(len(layers) - 1)]
+        self._skips = [
+            K.layers.Concatenate(axis=-1) for i in range(len(layers) - 1)
+        ]
 
         # set up the convolutions
         self._encoder = [
-            convolution(filters=k, name=f"Encoder{i}") for i, k in enumerate(layers)
+            convolution(filters=k, name=f"Encoder{i}")
+            for i, k in enumerate(layers)
         ]
         self._decoder = [
             convolution(filters=k, name=f"Decoder{i}")
@@ -98,7 +101,10 @@ class UNet(SerializationMixin, K.Model):
         ]
 
         self._decoder_output = convolution(
-            filters=output_filters, kernel_size=1, activation="linear", name="Output"
+            filters=output_filters,
+            kernel_size=1,
+            activation="linear",
+            name="Output",
         )
 
         assert len(self._encoder) == len(self._decoder) + 1
