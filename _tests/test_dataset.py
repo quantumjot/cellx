@@ -34,7 +34,7 @@ def test_write_dataset(tmp_path):
     assert os.path.exists(filename)
 
 
-@pytest.mark.parametrize("dtype", ["uint8", "uint16"])
+@pytest.mark.parametrize("dtype", ["uint8", "uint16", "float32"])
 def test_read_write_dataset_dtype(tmp_path, dtype):
     """Test to make sure serialized data matches raw data."""
     # note(arl) - this function doesn't work with a path as input!!
