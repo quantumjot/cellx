@@ -47,6 +47,7 @@ def write_dataset(
     assert images.dtype in (
         np.uint8,
         np.uint16,
+        np.float32,
     )
     assert images.ndim > 2 and images.ndim < 6
 
